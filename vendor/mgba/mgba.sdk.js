@@ -561,6 +561,8 @@ export async function load(config) {
     let running = false;
     let paused = false;
     let speed = 1;
+    let fastAudio = false;
+    let audioRemainder = 0;
     let wallClockFrames = 0;
     let wallClockStart = 0;
     let fpsCount = 0;
@@ -596,11 +598,25 @@ export async function load(config) {
             if (frames <= 0)
                 return;
             const start = audioPtr >> 1;
-            // Drain but do not queue accelerated audio: no backlog or high-pitch burst.
-            if (speed === 1) {
-                const chunk = mod.HEAP16.slice(start, start + frames * 2);
+            // Decimate accelerated stereo audio to keep real-time duration bounded.
+            // Averaging each group reduces aliasing; pitch follows game speed.
+            if (speed === 1 || fastAudio) {
+                let chunk;
+                if (speed === 1) chunk = mod.HEAP16.slice(start, start + frames * 2);
+                else {
+                    const count = Math.floor((frames + audioRemainder) / speed);
+                    chunk = new Int16Array(count * 2);
+                    for (let i = 0; i < count; i++) {
+                        const from = Math.max(0, i * speed - audioRemainder);
+                        const to = Math.min(frames, (i + 1) * speed - audioRemainder);
+                        let left = 0, right = 0;
+                        for (let j = from; j < to; j++) { left += mod.HEAP16[start + j*2]; right += mod.HEAP16[start + j*2 + 1]; }
+                        chunk[i*2] = left / (to-from); chunk[i*2+1] = right / (to-from);
+                    }
+                    audioRemainder = (frames + audioRemainder) % speed;
+                }
+                enqueuedFrames += chunk.length / 2;
                 sink.port.postMessage(chunk, [chunk.buffer]);
-                enqueuedFrames += frames;
             }
             if (frames < AUDIO_SCRATCH_FRAMES)
                 return;
@@ -686,7 +702,7 @@ export async function load(config) {
             prevFrame = null;
         },
         volume: (value) => {
-            gain.gain.value = speed === 1 ? Math.max(0, Math.min(1, Number(value))) : 0;
+            gain.gain.value = speed === 1 || fastAudio ? Math.max(0, Math.min(1, Number(value))) : 0;
         },
         gamepads: (value) => {
             // Whatever a pad was holding when polling stopped would otherwise stay
@@ -727,14 +743,22 @@ export async function load(config) {
     };
     const instance = {
         getSpeed() { return speed; },
+        getFastAudio() { return fastAudio; },
+        setFastAudio(value) {
+            fastAudio = !!value;
+            audioRemainder = 0;
+            sink.port.postMessage({flush:true});
+            gain.gain.value = speed === 1 || fastAudio ? Math.max(0,Math.min(1,opts.volume)) : 0;
+        },
         setSpeed(value) {
             if (![1,2,4].includes(value)) throw new Error('Speed must be 1, 2 or 4');
             if (speed === value) return;
             speed = value;
+            audioRemainder = 0;
             wallClockStart = 0;
             wallClockFrames = 0;
             sink.port.postMessage({flush:true});
-            gain.gain.value = speed === 1 ? Math.max(0,Math.min(1,opts.volume)) : 0;
+            gain.gain.value = speed === 1 || fastAudio ? Math.max(0,Math.min(1,opts.volume)) : 0;
         },
         // SoulGold host extensions, 2026-09-22. WASM core is unmodified.
         getBatterySave() { return cloneSram(); },
