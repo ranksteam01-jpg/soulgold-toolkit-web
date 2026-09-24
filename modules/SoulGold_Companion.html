@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เส้นทาง · SoulGold Companion</title>
+<!-- System-font fallbacks keep the guide usable without third-party font requests. -->
+
+
+  <link rel="stylesheet" href="companion-enhancements.css"> <link rel="stylesheet" href="companion.css"><link rel="stylesheet" href="guide-theme.css"></head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="mark">SOULGOLD</span>
+    <h1>เส้นทาง<span>เดินเกม</span></h1>
+  </div>
+  <div class="searchwrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input id="search" placeholder="ค้นหาเมือง ยิม มอน หรือไอเทม...">
+  </div>
+  <div class="badgerow" id="badgerow"></div>
+</div>
+
+
+<div class="tabs" id="tabs">
+  <button class="tab" data-tab="pokedex">โปเกมอนแนะนำ</button>
+  <button class="tab active" data-tab="story">เนื้อเรื่องหลัก</button>
+  <button class="tab" data-tab="gyms">กลไกยิม</button>
+  <button class="tab" data-tab="npc">NPC/อีเวนต์</button>
+  <button class="tab" data-tab="balls">โปเกบอล</button>
+  <button class="tab" data-tab="types">ตารางธาตุ</button>
+  <button class="tab" data-tab="post">Postgame</button>
+
+</div>
+
+
+
+<main>
+  <div id="pane-pokedex" class="hidden"></div>
+  <div id="pane-story"></div>
+
+  <div id="pane-gyms" class="hidden"></div>
+  <div id="pane-npc" class="hidden"></div>
+  <div id="pane-balls" class="hidden"></div>
+  <div id="pane-types" class="hidden"></div>
+  <div id="pane-post" class="hidden"></div>
+  <div id="pane-saveprofile" class="hidden"></div>
+</main>
+
+
+<div id="monOverlay" onclick="if(event.target===this) this.classList.remove('show')"></div>
+<button class="fab" id="whereBtn">
+
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 2 L19 21 L12 17 L5 21 Z"/></svg>
+  ตอนนี้อยู่ไหน?
+</button>
+
+<div class="sheet-backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="handle"></div>
+  <h2>เลือกจุดที่คุณอยู่ตอนนี้</h2>
+  <div id="resumeSlot"></div>
+  <select id="whereSelect"></select>
+  <div class="whereanswer" id="whereAnswer" style="display:none"></div>
+  <button class="startbtn hidden" id="startJourneyBtn">เริ่มออกเดินทาง →</button>
+</div>
+
+<div class="journey" id="journey">
+  <div class="journey-top">
+    <div class="row1">
+      <button class="journey-close" id="journeyClose">✕</button>
+      <div class="journey-loc" id="journeyLoc">—</div>
+      <button class="journey-close" id="journeyRestart" title="เลือกจุดใหม่">↺</button>
+    </div>
+    <div class="journey-progress"><div class="fill" id="journeyFill"></div></div>
+    <div class="journey-count" id="journeyCount"></div>
+    <div class="journey-toprank hidden" id="journeyTopRank"></div>
+  </div>
+  <div class="journey-body"><div class="journey-card" id="journeyCard"></div></div>
+  <div class="journey-nav">
+    <button class="back" id="journeyBack">‹ ก่อนหน้า</button>
+    <button class="next" id="journeyNext">ทำเสร็จแล้ว ต่อไป →</button>
+  </div>
+</div>
+
+<footer>
+  ข้อมูลอ้างอิงจากบทสรุปเดินเกม Pokémon SoulGold โดยทีม NONPLAE / รอมเหมียว<br>
+  ทำเป็นแอปคู่ขนานเพื่อใช้อ้างอิงระหว่างเล่นเท่านั้น ไม่ได้แก้ไขตัวเกม
+</footer>
+
+
+
+<a id="sgOpen" href="../play.html?bag=1" target="_top">กระเป๋าและเซฟในหน้าเล่น →</a>
+
+   <script src="companion.js"></script><script src="../shared.js"></script><script src="companion-enhancements.js"></script></body>
+</html>
+
+
+
