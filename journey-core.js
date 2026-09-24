@@ -50,7 +50,7 @@
   if(text.length>8*1024*1024)throw Error('Symbol file too large');
   const result={};
   for(const name of ['gSaveBlock1Ptr','gSaveBlock2Ptr']){
-   const m=text.match(new RegExp('(?:0x)?([0-9a-fA-F]{8})\\s+(?:[a-zA-Z]\\s+)?'+name+'\\b'));
+   const m=text.match(new RegExp('(?:0x)?([0-9a-fA-F]{8})\\s+(?:[a-zA-Z]\\s+)?(?:[0-9a-fA-F]{8}\\s+)?'+name+'\\b'));
    if(!m)throw Error('ไม่พบ '+name+' ใน .map/.sym');
    const address=parseInt(m[1],16);if(!((address>=0x02000000&&address<=0x0203fffc)||(address>=0x03000000&&address<=0x03007ffc)))throw Error('Symbol ไม่ได้อยู่ใน RAM');result[name]=address;
   }return result;

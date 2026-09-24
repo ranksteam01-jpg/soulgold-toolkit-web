@@ -1,0 +1,77 @@
+/* v4.0.2: viewport-sized controls, with the same game and save storage. */
+.play-layout{grid-template-columns:minmax(0,1fr) 320px}
+.play-layout>aside{display:flex;flex-direction:column;min-width:0}
+.play-layout>aside>.play-card:last-child{order:-1}
+.console{min-width:0;display:flex;flex-direction:column}
+.screen{width:100%;flex:none;align-self:center}
+.quick-controls{justify-content:center}
+#playSettings{border:1px solid #34445c;border-radius:12px;padding:8px 12px}
+#playSettings input[type=checkbox]{width:20px;min-height:20px}
+.play-focus{overflow:hidden}
+.play-focus .app-header,.play-focus .play-heading,.play-focus #playStatus{display:none}
+.play-focus .play-main{max-width:none;padding:0}
+.play-focus .play-layout,.play-layout:fullscreen{background:#090c13;padding:12px;width:100%;height:100dvh;overflow:auto}
+.play-focus .console{position:static;min-height:0;align-self:start}
+.play-focus .screen{max-width:calc((100dvh - 225px)*1.5)}
+.play-focus .keys{display:none}
+.play-layout:fullscreen dialog{position:fixed}
+@media(max-width:920px){
+ .play-layout{grid-template-columns:minmax(0,1fr)}
+ .game-loaded .app-header{position:static;padding:4px 8px;gap:0}
+ .game-loaded .app-header .brand,.game-loaded .app-header .local-badge{display:none}
+ .game-loaded .app-header nav{order:0;margin:0;gap:4px;width:100%;justify-content:space-around}
+ .game-loaded .app-header nav a{padding:8px;font-size:12px;min-height:38px}
+ .game-loaded .play-heading{display:none}
+ .game-loaded .play-main{padding:6px 6px 20px}
+ .game-loaded #playStatus{margin:4px 0 8px;padding:6px 9px;font-size:11px}
+ .console{padding:8px;border-radius:14px;position:static}
+ .console-top{font-size:10px;padding:0 2px 6px;letter-spacing:0}
+ .screen{order:1;max-width:calc((100svh - 380px)*1.5);min-width:min(100%,210px)}
+ .console-top{order:0}
+ .touch-controls{display:block;order:2;width:100%;max-width:460px;margin:6px auto 0}
+ .primary-controls{order:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));padding:6px;gap:6px;margin:8px 0 0}
+ .primary-controls button,.primary-controls label{font-size:11px;min-height:38px;padding:5px;min-width:0}
+ .primary-controls label{justify-content:center;gap:4px}
+ .primary-controls select{font-size:12px;padding:4px;min-height:34px;width:88px}
+ .quick-controls{order:4;display:flex;gap:6px;margin:6px 0 0}
+ .quick-controls button{font-size:11px;min-height:36px;padding:5px 9px;flex:1}
+ #playSettings{order:5;margin-top:6px}
+ .keys{display:none}
+ .touch-controls .shoulders button{min-height:30px;height:30px;width:64px;padding:2px;font-size:12px}
+ .touch-controls .pad-row{margin:3px 0}
+ .touch-controls .dpad{grid-template-columns:repeat(3,44px);grid-template-rows:repeat(3,36px);gap:2px}
+ .touch-controls .dpad button{min-width:44px;min-height:36px;padding:0;font-size:14px}
+ .touch-controls .ab{padding:0 4px;gap:12px}
+ .touch-controls .ab button{width:54px;height:54px;min-height:54px;font-size:20px}
+ .touch-controls .system-buttons{gap:16px}
+ .touch-controls .system-buttons button{min-height:30px;height:30px;padding:3px 20px;font-size:10px}
+ .play-focus .play-layout,.play-layout:fullscreen{padding:4px;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+ .play-focus .screen{max-width:calc((100svh - 305px)*1.5)}
+ .play-layout>aside{margin-top:8px}
+}
+@media(max-width:540px) and (max-height:700px){
+ .game-loaded:not(.play-focus) .screen{max-width:calc((100svh - 410px)*1.5)}
+ .game-loaded #playStatus{display:none}
+ .game-loaded .primary-controls{margin-top:4px;padding:4px;gap:4px}
+ .game-loaded .quick-controls button{font-size:10px;padding:3px}
+ .game-loaded .touch-controls .dpad{grid-template-rows:repeat(3,32px)}
+ .game-loaded .touch-controls .dpad button{min-height:32px}
+}
+@media(max-width:1000px) and (orientation:landscape) and (max-height:600px){
+ .game-loaded .app-header,.game-loaded #playStatus{display:none}
+ .play-layout{grid-template-columns:1fr}
+ .console{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:4px 10px;padding:6px}
+ .console-top{grid-column:1/-1;grid-row:1}
+ .screen,.play-focus .screen{grid-column:1;grid-row:2/5;max-width:calc((100svh - 55px)*1.5);min-width:0;align-self:start;justify-self:center}
+ .touch-controls{grid-column:2;grid-row:2;display:block;margin:0;width:100%}
+ .touch-controls .dpad{grid-template-columns:repeat(3,38px);grid-template-rows:repeat(3,30px)}
+ .touch-controls .dpad button{min-width:38px;min-height:30px}
+ .touch-controls .ab{gap:6px;padding:0}
+ .touch-controls .ab button{width:48px;height:48px;min-width:48px;min-height:48px}
+ .primary-controls{grid-column:2;grid-row:3;margin:0;padding:2px;gap:3px}
+ .primary-controls button,.primary-controls label{min-height:30px;font-size:10px}
+ .primary-controls select{min-height:28px;width:70px;font-size:10px}
+ .quick-controls{grid-column:2;grid-row:4;margin:0;gap:3px}
+ .quick-controls button{min-height:30px;font-size:10px;padding:3px}
+ #playSettings{grid-column:1/-1;grid-row:5}
+}

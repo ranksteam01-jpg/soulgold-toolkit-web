@@ -6,8 +6,9 @@ import {ask} from './confirm-ui.js';
 let engine=null,game=null,paused=false,busy=false,saving=null,releaseLock=null,baseline=null,oldJourney=null,lastBatteryHash='',timer;
 const pointers=new Map();
 function status(text){$('playStatus').textContent=text;}
-function fail(error){console.error(error);status(error.message||String(error));}
-function activeButtons(enabled){for(const id of ['pauseBtn','saveNow','exportBundle','exportSav','restorePrevious','editSave','speedSelect','backLibrary','exitGame','importQuick','captureCover'])$(id).disabled=!enabled;}
+function fail(error){console.error(error);const message=error.message||String(error);status(message);SG.toast(message);}
+function activeButtons(enabled){for(const id of ['pauseBtn','saveNow','exportBundle','exportSav','restorePrevious','editSave','speedSelect','backLibrary','exitGame','importQuick','captureCover'])$(id).disabled=!enabled; $('editSave').hidden=!enabled||!game?.soulgold;}
+activeButtons(false);
 async function guard(fn){if(busy)return;busy=true;try{if(saving)await saving;await fn();}catch(e){fail(e);}finally{busy=false;}}
 function releaseInput(){pointers.clear();engine?.releaseButtons();document.querySelectorAll('[data-bit]').forEach(b=>b.classList.remove('pressed'));}
 function setPaused(value){if(!engine)return;paused=value;releaseInput();value?engine.pause():engine.resume();$('pauseBtn').textContent=value?'เล่นต่อ':'พักเกม';}
@@ -17,7 +18,7 @@ async function stopGame(){
   if(saving)await saving;
   // Failure leaves the game paused and recoverable; never leave before IDB commits.
   await saveNow(false);
-  engine.destroy();engine=null;
+  engine.destroy();engine=null;document.body.classList.remove('game-loaded');focusMode(false);
  }
  clearInterval(timer);timer=null;releaseLock?.();releaseLock=null;
  game=null;baseline=null;oldJourney=null;lastBatteryHash='';paused=false;
@@ -39,12 +40,12 @@ async function boot(g){
   const local=await getSave(g.id);
   engine=await load({canvasEl:$('gameCanvas'),assets:{rom:new Uint8Array(g.rom)},storageNamespace:g.id,persist:null,options:{system:'gba',volume:+$('volume').value,gamepads:true},onEvent:e=>{if(e.type==='frame')$('fps').textContent=Math.round(e.fps)+' FPS';}});
   if(local){if(local.core!==CORE_VERSION)throw Error('จุดเล่นต่อมาจาก emulator คนละรุ่น กรุณานำเข้า .sav แทน');if(local.battery)engine.loadBatterySave(new Uint8Array(local.battery));await engine.loadState(new Uint8Array(local.state));}
-  engine.setSpeed(1);$('speedSelect').value='1';engine.start();paused=false;$('pauseBtn').textContent='พักเกม';$('screenCover').hidden=true;activeButtons(true);
+  engine.setSpeed(1);engine.setFastAudio($('fastAudio').checked);$('speedSelect').value='1';engine.start();paused=false;$('pauseBtn').textContent='พักเกม';$('screenCover').hidden=true;activeButtons(true);document.body.classList.add('game-loaded');
   renderJourney(null);if(local?.battery)await updateJourney(new Uint8Array(local.battery),local.state);
   $('saveStatus').textContent=local?'เล่นต่อจาก '+new Date(local.updatedAt).toLocaleString('th-TH'):'เริ่มเกมใหม่ • จะบันทึกจุดเล่นต่อใน 8 วินาที';
   timer=setInterval(()=>{if(engine&&!paused&&!busy)saveNow(false).catch(fail);},8000);
   game=await updateGame(g.id,{lastPlayed:Date.now()});SG.write('last-game',g.id);
-  status('พร้อมเล่น • เซฟจุดเล่นต่ออัตโนมัติในเครื่อง • ใช้เมนู Save ในเกมด้วยเพื่อสร้าง .sav');$('gameCanvas').focus();
+  status('พร้อมเล่น • เซฟจุดเล่นต่ออัตโนมัติในเครื่อง • ใช้เมนู Save ในเกมด้วยเพื่อสร้าง .sav');$('gameCanvas').focus({preventScroll:true});
  }catch(e){engine?.destroy();engine=null;clearInterval(timer);activeButtons(false);releaseLock?.();releaseLock=null;throw e;}
 }
 async function saveNow(notify=true){
@@ -61,7 +62,7 @@ function renderJourney(j){
  $('taskList').replaceChildren();$('locationName').textContent=j?j.mapName:'การเดินทางของคุณ';
  $('journeyStatus').textContent=j?(j.mode==='live'?'อ่านจากหน่วยความจำสด':'อ่านจากการบันทึกในเมนูเกม')+' · ตรวจได้ '+j.tasks.length+' เหตุการณ์ ไม่ใช่ทุกภารกิจ':game?.soulgold?'รอเซฟ SoulGold ที่สมบูรณ์ • บันทึกด้วยเมนู Save ในเกมก่อน':'เกมทั่วไป • ไม่ตรวจเนื้อเรื่อง SoulGold';
  $('nextTask').textContent=j?'ลำดับหลักที่ยังไม่พบหลักฐาน: '+j.next:'ภารกิจจะยังไม่ถูกติ๊กจนกว่าจะพบ flag ที่ยืนยันว่าทำแล้ว';
- if(j?.hints?.length){const details=document.createElement('details'),title=document.createElement('summary'),list=document.createElement('ol');title.textContent='ที่นี่ทำอะไรได้บ้าง · คำแนะนำจากคู่มือ';for(const hint of j.hints){const li=document.createElement('li');li.textContent=hint;list.append(li);}const note=document.createElement('p');note.textContent='รายการแนะนำเหล่านี้ยังไม่มีตัวตรวจความสำเร็จ จึงไม่แสดงเช็คพอยต์อัตโนมัติ';details.append(title,list,note);$('nextTask').append(details);}
+ if(j?.hints?.length){const details=document.createElement('details'),title=document.createElement('summary'),list=document.createElement('ol');details.open=true;title.textContent='ที่นี่ทำอะไรได้บ้าง · คำแนะนำจากคู่มือ';for(const hint of j.hints){const li=document.createElement('li');li.textContent=hint;list.append(li);}const note=document.createElement('p');note.textContent='รายการแนะนำเหล่านี้ยังไม่มีตัวตรวจความสำเร็จ จึงไม่แสดงเช็คพอยต์อัตโนมัติ';details.append(title,list,note);$('nextTask').append(details);}
  if(j)for(const t of j.tasks){const li=document.createElement('li');li.className=t.complete?'done':'';li.textContent=(t.complete?'✓ ':'○ ')+t.label;$('taskList').append(li);}
 }
 async function updateJourney(battery,state){
@@ -69,18 +70,21 @@ async function updateJourney(battery,state){
  try{
   if(battery){const hash=await SG.hash(battery);if(hash!==lastBatteryHash){baseline=SGJourney.readSave(battery);lastBatteryHash=hash;}}
   if(!baseline)throw Error('รอเซฟในเกม');
-  let blocks=baseline,mode='battery';
-  if(game.symbols&&state){try{blocks=SGJourney.liveBlocks(new Uint8Array(state),game.symbols,baseline);mode='live';}catch(e){$('journeyStatus').textContent=e.message;}}
+  let blocks=baseline,mode='battery',liveWarning='';
+  if(game.symbols&&state){try{blocks=SGJourney.liveBlocks(new Uint8Array(state),game.symbols,baseline);mode='live';}catch(e){liveWarning=' · อ่านสดไม่ได้: '+e.message+' — แสดงเซฟในเกมล่าสุดแทน';}}
   const j={...SGJourney.snapshot(blocks,SG_SOURCE,SG_MAPS,mode),romId:game.id,gameName:game.name};
   if(oldJourney){const fresh=j.tasks.filter(t=>t.complete&&!oldJourney.tasks.find(o=>o.id===t.id)?.complete);if(fresh.length)SG.toast('สำเร็จ: '+fresh.map(t=>t.label).join(' · '));else if(j.mapKey!==oldJourney.mapKey)SG.toast('ถึง '+j.mapName+' · ต่อไป: '+j.next);}
-  oldJourney=j;renderJourney(j);SG.write('journey',j);
- }catch(e){$('journeyStatus').textContent='ยังไม่ยืนยันความคืบหน้า: '+e.message;}
+  oldJourney=j;renderJourney(j);$('journeyStatus').textContent+=liveWarning;SG.write('journey',j);
+ }catch(e){baseline=null;oldJourney=null;lastBatteryHash='';renderJourney(null);$('journeyStatus').textContent='ยังไม่ยืนยันความคืบหน้า: '+e.message;}
 }
 async function applyRecord(record){setPaused(true);if(saving)await saving;if(record.battery)engine.loadBatterySave(new Uint8Array(record.battery));await engine.loadState(new Uint8Array(record.state));baseline=null;oldJourney=null;lastBatteryHash='';await saveNow(false);status('โหลดจุดเล่นต่อแล้ว กด “เล่นต่อ” เมื่อพร้อม');}
 $('pauseBtn').onclick=()=>guard(async()=>{setPaused(!paused);if(paused)await saveNow(false);});
 $('saveNow').onclick=()=>guard(()=>saveNow());
 $('importQuick').onclick=()=>{if(!busy&&engine)$('saveInput').click();};
-$('speedSelect').onchange=e=>{if(!engine)return;try{engine.setSpeed(Number(e.target.value));SG.toast(engine.getSpeed()===1?'ความเร็วปกติ • เปิดเสียงตามระดับเดิม':'เร่ง '+engine.getSpeed()+'× • ปิดเสียงชั่วคราว');$('gameCanvas').focus();}catch(error){e.target.value=String(engine.getSpeed());fail(error);}};
+$('speedSelect').onchange=e=>{if(!engine)return;try{engine.setSpeed(Number(e.target.value));SG.toast(engine.getSpeed()===1?'ความเร็วปกติ':'เร่ง '+engine.getSpeed()+'× • '+($('fastAudio').checked?'เปิดเสียง':'ปิดเสียง'));$('gameCanvas').focus({preventScroll:true});}catch(error){e.target.value=String(engine.getSpeed());fail(error);}};
+$('fastAudio').checked=SG.read('fast-audio',false)===true;
+$('fastAudio').onchange=e=>{engine?.setFastAudio(e.target.checked);SG.write('fast-audio',e.target.checked);};
+$('settingsBtn').onclick=()=>{const open=$('playSettings').hidden;$('playSettings').hidden=!open;$('settingsBtn').setAttribute('aria-expanded',String(open));};
 $('backLibrary').onclick=()=>guard(async()=>{await stopGame();location.href='index.html';});
 $('exitGame').onclick=()=>guard(async()=>{await stopGame();location.href='index.html';});
 document.addEventListener('click',e=>{
@@ -89,7 +93,10 @@ document.addEventListener('click',e=>{
  if(target.pathname===location.pathname){e.preventDefault();return;}
  e.preventDefault();guard(async()=>{await stopGame();location.href=target.href;});
 });
-$('fullBtn').onclick=()=>guard(async()=>{const el=document.querySelector('.console');if(document.fullscreenElement)await document.exitFullscreen();else if(el.requestFullscreen)await el.requestFullscreen();else SG.toast('เบราว์เซอร์นี้ไม่รองรับเต็มจอ ใช้แนวนอนหรือเพิ่มไปหน้าจอหลัก');});
+function focusMode(active){document.body.classList.toggle('play-focus',active);$('fullBtn').textContent=active?'ย่อจอ':'เต็มจอ';if(active){window.scrollTo(0,0);document.querySelector('.play-layout').scrollTop=0;}}
+$('fullBtn').onclick=()=>guard(async()=>{if(document.body.classList.contains('play-focus')){if(document.fullscreenElement)await document.exitFullscreen();focusMode(false);}else{focusMode(true);try{await document.documentElement.requestFullscreen?.();}catch{SG.toast('ใช้โหมดขยายจอในหน้าเว็บ');}}});
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)focusMode(false);});
+matchMedia('(orientation: landscape)').addEventListener('change',()=>{if(engine&&!document.querySelector('dialog[open]'))requestAnimationFrame(()=>document.querySelector('.console').scrollIntoView({block:'start'}));});
 $('volume').oninput=e=>engine?.config.write('volume',+e.target.value);
 document.querySelectorAll('[data-bit]').forEach(button=>{
  button.oncontextmenu=e=>e.preventDefault();
@@ -106,7 +113,7 @@ $('saveInput').onchange=e=>guard(async()=>{
  else{const battery=new Uint8Array(await f.arrayBuffer());if(game.soulgold)SGJourney.readSave(battery);engine.loadBatterySave(battery);engine.reset();baseline=null;oldJourney=null;lastBatteryHash='';await saveNow(false);status('นำเข้า .sav แล้ว กดเล่นต่อและเลือก Continue ในเกม');}
 });
 $('restorePrevious').onclick=()=>guard(async()=>{const r=await getSave(game.id);if(!r?.previous)throw Error('ยังไม่มีเซฟก่อนหน้า');if(!await ask('ย้อนกลับไปเซฟก่อนหน้า?'))return;await applyRecord(r.previous);});
-$('soulgoldMode').onchange=e=>guard(async()=>{if(!game){e.target.checked=false;throw Error('เปิดเกมก่อน');}game=await updateGame(game.id,{soulgold:e.target.checked});oldJourney=null;await updateJourney(engine.getBatterySave(),await engine.saveState());});
+$('soulgoldMode').onchange=e=>guard(async()=>{if(!game){e.target.checked=false;throw Error('เปิดเกมก่อน');}game=await updateGame(game.id,{soulgold:e.target.checked});activeButtons(true);oldJourney=null;await updateJourney(engine.getBatterySave(),await engine.saveState());});
 $('symbolsInput').onchange=e=>guard(async()=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(!game?.soulgold)throw Error('เปิดเกม SoulGold และยืนยันรุ่นก่อน');if(f.size>8*1048576)throw Error('Symbol file ใหญ่เกินไป');const symbols=SGJourney.parseSymbols(await f.text());if(!await ask('ยืนยันว่า symbol นี้ build มาจาก ROM ไฟล์เดียวกัน? ใช้ไฟล์คนละรุ่นอาจอ่านค่าผิด'))return;game=await updateGame(game.id,{symbols});await updateJourney(engine.getBatterySave(),await engine.saveState());});
 $('clearSymbols').onclick=()=>guard(async()=>{if(!game)return;game=await updateGame(game.id,{symbols:null});SG.toast('ปิดตัวอ่านสดแล้ว');});
 window.addEventListener('blur',releaseInput);
@@ -128,5 +135,5 @@ await guard(async()=>{
  if(!id){status('เลือกเกมจากคลัง แล้วระบบจะเปิดเกมให้โดยอัตโนมัติ');return;}
  if(typeof id!=='string'||!/^[a-f0-9]{64}$/.test(id))throw Error('ลิงก์เกมไม่ถูกต้อง กลับไปเลือกจากคลัง');
  const g=await getGame(id);if(!g)throw Error('ไม่พบ ROM ในเบราว์เซอร์เครื่องนี้ กรุณาเพิ่มเกมในคลังก่อน');
- await boot(g);if(params.get('bag')==='1')await bagTools.open();
+ await boot(g);if(params.get('bag')==='1'&&game.soulgold)await bagTools.open();
 });
