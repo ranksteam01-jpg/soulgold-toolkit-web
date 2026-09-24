@@ -1,0 +1,8 @@
+<!doctype html>
+<html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>อัปเดตหน้าเล่น • ไม่ลบเซฟ</title>
+<style>:root{color-scheme:dark}body{margin:0;background:#0b1521;color:#eef5ff;font:16px/1.8 system-ui}main{max-width:650px;margin:8vh auto;padding:28px}h1{line-height:1.3}section{padding:24px;border:1px solid #50667b;background:#172a3a;border-radius:20px}button{padding:14px 20px;background:#f5c45d;border:0;border-radius:12px;color:#18232f;font:700 16px system-ui;cursor:pointer}button:disabled{opacity:.5}a{color:#92decb}label{display:block;margin:22px 0}input{width:20px;height:20px;vertical-align:middle}#updateStatus{white-space:pre-line}strong{color:#f5d788}</style></head>
+<body><main><section><h1>อัปเดตเป็นคอลเลกชันใหม่</h1><p>หน้านี้อัปเดตเฉพาะไฟล์เว็บที่เก็บไว้ออฟไลน์ <strong>ไม่ลบ ROM, เซฟใน IndexedDB หรือร่างใน localStorage</strong></p>
+<ol><li>กลับแท็บเกม กด <strong>บันทึกตอนนี้</strong> แล้วรอให้ขึ้นว่าบันทึกสำเร็จ แนะนำดาวน์โหลดสำรองจุดเล่นต่อด้วย</li><li>ปิดแท็บ SoulGold อื่นทั้งหมด เหลือเฉพาะหน้านี้ เพื่อไม่ให้หน้าเก่าเก็บแคชกลับมา</li><li>ติ๊กยืนยัน แล้วกดอัปเดต จากนั้นเลือกเกมเดิมในคลัง</li></ol>
+<label><input id="ready" type="checkbox"> บันทึกเกมแล้ว และปิดแท็บ SoulGold อื่นทั้งหมดแล้ว</label>
+<button id="update" disabled>อัปเดตและเปิดคลังเกม v4</button><p id="updateStatus" role="status">ใช้ที่อยู่เว็บเดิมเพื่อให้พบเซฟเดิม ห้ามล้างข้อมูลเว็บไซต์ หรือสลับ 127.0.0.1 กับ localhost</p>
+<a href="index.html">กลับคลังเกมโดยยังไม่อัปเดต</a></section></main><script src="update-play.js"></script></body></html>
