@@ -1,8 +1,0 @@
-// Journey proof is independent from the guide's user-managed checklist.
-function renderPlayJourney(){
- const story=document.getElementById('pane-story');if(!story)return;let card=document.getElementById('playJourney');if(!card){card=document.createElement('section');card.id='playJourney';card.className='sav-journey';story.prepend(card);}card.replaceChildren();
- const h=document.createElement('h3');h.textContent='เชื่อมกับเกมที่คุณเล่น';const j=SG.read('journey'),text=document.createElement('p');text.textContent=j?j.gameName+' · '+j.mapName+' · '+(j.mode==='live'?'ข้อมูลสด':'เซฟในเกม')+' · '+new Date(j.updatedAt).toLocaleString('th-TH'):'เล่น SoulGold และยืนยันรุ่นในหน้าเล่น จากนั้นใช้เมนู Save ในเกมเพื่อเชื่อมความคืบหน้า';card.append(h,text);
- if(j){const next=document.createElement('p');next.textContent='ลำดับหลักที่ยังไม่พบหลักฐาน: '+j.next;card.append(next);const row=document.createElement('div');row.className='linked-badges';for(const t of j.tasks){const chip=document.createElement('span');chip.className='linked-badge'+(t.complete?' complete':'');chip.textContent=(t.complete?'✓ ':'○ ')+t.label;row.append(chip);}card.append(row);}
- const note=document.createElement('p');note.textContent='ไม่ติ๊กความสำเร็จจากการเข้าเมืองหรือเพิ่มไอเทม ตรวจเฉพาะเหตุการณ์ที่มี flag รองรับ ข้อมูลคู่มือด้านล่างยังใช้ค้นหาและจดความคืบหน้าเองได้';const link=document.createElement('a');const id=j?.romId||SG.read('last-game');link.href='../play.html'+(typeof id==='string'&&/^[a-f0-9]{64}$/.test(id)?'?game='+id:'');link.target='_top';link.textContent='กลับไปเล่น →';card.append(note,link);
-}
-renderPlayJourney();window.addEventListener('sg-state',e=>{if(e.detail==='journey')renderPlayJourney();});window.addEventListener('pageshow',renderPlayJourney);
