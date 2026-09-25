@@ -103,14 +103,45 @@ document.addEventListener('click',e=>{
  if(target.pathname===location.pathname){e.preventDefault();return;}
  e.preventDefault();guard(async()=>{await stopGame();location.href=target.href;});
 });
-function focusMode(active){document.body.classList.toggle('play-focus',active);$('fullBtn').textContent=active?'ย่อจอ':'เต็มจอ';if(active){window.scrollTo(0,0);document.querySelector('.play-layout').scrollTop=0;}}
-$('fullBtn').onclick=()=>guard(async()=>{if(document.body.classList.contains('play-focus')){if(document.fullscreenElement)await document.exitFullscreen();focusMode(false);}else{focusMode(true);try{await document.documentElement.requestFullscreen?.();}catch{SG.toast('ใช้โหมดขยายจอในหน้าเว็บ');}}});
-document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement)focusMode(false);});
-matchMedia('(orientation: landscape)').addEventListener('change',()=>{if(engine&&!document.querySelector('dialog[open]'))requestAnimationFrame(()=>document.querySelector('.console').scrollIntoView({block:'start'}));});
+let focusScrollY=0,viewportFrame=0;
+function updatePlayerViewport(){
+ const viewport=window.visualViewport;
+ const height=Math.round(viewport?.height||window.innerHeight),width=Math.round(viewport?.width||window.innerWidth);
+ document.documentElement.style.setProperty('--player-height',height+'px');
+ document.documentElement.style.setProperty('--player-width',width+'px');
+}
+function queuePlayerViewport(){cancelAnimationFrame(viewportFrame);viewportFrame=requestAnimationFrame(updatePlayerViewport);}
+function focusMode(active){
+ const wasActive=document.body.classList.contains('play-focus');
+ if(active&&!wasActive)focusScrollY=window.scrollY;
+ document.body.classList.toggle('play-focus',active);document.documentElement.classList.toggle('player-fullscreen',active);
+ $('fullBtn').textContent=active?'✕ ออกจากเต็มจอ':'เต็มจอ';$('fullBtn').setAttribute('aria-pressed',String(active));
+ if(active){updatePlayerViewport();document.querySelector('.play-layout').scrollTop=0;releaseInput();}
+ else if(wasActive){releaseInput();requestAnimationFrame(()=>window.scrollTo({top:focusScrollY,left:0,behavior:'instant'}));}
+}
+async function leaveFullscreen(){
+ if(document.fullscreenElement){
+  try{await document.exitFullscreen();}catch{SG.toast('ออกจากเต็มจอผ่านเบราว์เซอร์ไม่สำเร็จ');return;}
+  if(!document.fullscreenElement)focusMode(false);return;
+ }
+ focusMode(false);
+}
+$('fullBtn').onclick=()=>guard(async()=>{
+ if(document.body.classList.contains('play-focus')){await leaveFullscreen();return;}
+ focusMode(true);
+ const target=document.querySelector('.console');
+ if(typeof target.requestFullscreen!=='function'){SG.toast('ใช้โหมดเต็มจอสำหรับมือถือ');return;}
+ try{await target.requestFullscreen({navigationUI:'hide'});}catch{SG.toast('ใช้โหมดเต็มจอสำหรับมือถือ');}
+});
+document.addEventListener('fullscreenchange',()=>{if(document.fullscreenElement){if(!document.body.classList.contains('play-focus'))focusMode(true);queuePlayerViewport();}else if(document.body.classList.contains('play-focus'))focusMode(false);});
+window.addEventListener('resize',()=>{if(document.body.classList.contains('play-focus'))queuePlayerViewport();},{passive:true});
+window.visualViewport?.addEventListener('resize',()=>{if(document.body.classList.contains('play-focus'))queuePlayerViewport();},{passive:true});
+window.visualViewport?.addEventListener('scroll',()=>{if(document.body.classList.contains('play-focus'))queuePlayerViewport();},{passive:true});
+matchMedia('(orientation: landscape)').addEventListener('change',()=>{releaseInput();if(document.body.classList.contains('play-focus')){queuePlayerViewport();return;}if(engine&&!document.querySelector('dialog[open]'))requestAnimationFrame(()=>document.querySelector('.console').scrollIntoView({block:'start'}));});
 $('volume').oninput=e=>engine?.config.write('volume',+e.target.value);
 document.querySelectorAll('[data-bit]').forEach(button=>{
  button.oncontextmenu=e=>e.preventDefault();
- button.onpointerdown=e=>{if(!engine||paused)return;e.preventDefault();button.setPointerCapture(e.pointerId);pointers.set(e.pointerId,Number(button.dataset.bit));button.classList.add('pressed');engine.setButtons([...pointers.values()].reduce((m,b)=>m|(1<<b),0));};
+ button.onpointerdown=e=>{if(!engine||paused)return;e.preventDefault();button.setPointerCapture(e.pointerId);pointers.set(e.pointerId,Number(button.dataset.bit));button.classList.add('pressed');if(e.pointerType==='touch'&&typeof navigator.vibrate==='function')try{navigator.vibrate(8);}catch{}engine.setButtons([...pointers.values()].reduce((m,b)=>m|(1<<b),0));};
  const up=e=>{pointers.delete(e.pointerId);button.classList.remove('pressed');engine?.setButtons([...pointers.values()].reduce((m,b)=>m|(1<<b),0));};button.onpointerup=button.onpointercancel=button.onlostpointercapture=up;
 });
 $('exportBundle').onclick=()=>guard(async()=>{setPaused(true);const r=await saveNow(false);SG.download(game.name+'.sgsave',JSON.stringify(encodeSave(r)),'application/json');});

@@ -1,7 +1,7 @@
 // Keep user data out of the cache. Old tabs finish on the old release; no skipWaiting.
-const CACHE='soulgold-shell-collection-v4-1-0';
+const CACHE='soulgold-shell-collection-v4-1-1';
 const SHELL=['./','./index.html','./play.html','./companion.html','./collection.css','./play.css','./play-collection.css','./library.js','./play.js','./play-store.js','./bag-core.js','./bag-ui.js','./item-data.js','./confirm-ui.js','./shared.js','./shell.js','./journey-core.js','./app.webmanifest','./modules/source-profile.js','./modules/journey-maps.js','./modules/SoulGold_Companion.html','./modules/companion.js','./modules/companion.css','./modules/companion-enhancements.css','./modules/companion-enhancements.js','./modules/guide-theme.css','./vendor/mgba/mgba.sdk.js','./vendor/mgba/mgba.config.js','./vendor/mgba/mgba.manifest.js','./vendor/mgba/mgba.options.js','./vendor/mgba/mgba.zip.js','./vendor/mgba/mgba.js','./vendor/mgba/mgba.wasm'];
-SHELL.push('./play-layout.css');
+SHELL.push('./play-layout.css','./play-mobile-fullscreen.css');
 SHELL.push('./cloud.js','./cloud-ui.js','./cloud-core.js','./cloud-config.js','./cloud.css','./vendor/supabase/supabase.js');
 SHELL.push('./type-chart.js','./type-chart-data.js','./play-three-panel.css','./modules/guide-sprites.js','./modules/guide-sprites.css');
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));

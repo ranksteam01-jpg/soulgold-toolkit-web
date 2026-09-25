@@ -1,0 +1,519 @@
+/* Mobile fullscreen hotfix: dedicated game viewport without changing emulator/save logic. */
+.mobbyboy-brand{display:none}
+
+html.player-fullscreen,
+body.play-focus{
+  width:100%;
+  height:100%;
+  overflow:hidden!important;
+  overscroll-behavior:none;
+}
+
+body.play-focus{
+  background:#0a0d18;
+}
+
+body.play-focus .app-header,
+body.play-focus .play-heading,
+body.play-focus #playStatus,
+body.play-focus .play-layout>aside,
+body.play-focus .play-main>.fine,
+body.play-focus .primary-controls,
+body.play-focus #playSettings,
+body.play-focus .keys,
+body.play-focus #settingsBtn{
+  display:none!important;
+}
+
+body.play-focus .play-main{
+  width:100%;
+  max-width:none;
+  height:var(--player-height,100dvh);
+  min-height:0;
+  margin:0;
+  padding:0;
+  overflow:hidden;
+}
+
+body.play-focus .play-layout{
+  position:fixed;
+  z-index:99990;
+  inset:0;
+  width:var(--player-width,100vw);
+  height:var(--player-height,100vh);
+  height:var(--player-height,100dvh);
+  max-width:none;
+  min-height:0;
+  margin:0;
+  padding:0;
+  overflow:hidden!important;
+  overscroll-behavior:none;
+  display:block;
+  background:#0a0d18;
+}
+
+body.play-focus .console,
+.console:fullscreen{
+  box-sizing:border-box;
+  position:relative!important;
+  inset:auto;
+  width:100%!important;
+  max-width:none!important;
+  height:100%!important;
+  min-height:0!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:
+    max(12px,env(safe-area-inset-top))
+    max(14px,env(safe-area-inset-right))
+    max(12px,env(safe-area-inset-bottom))
+    max(14px,env(safe-area-inset-left));
+  border:0;
+  border-radius:0;
+  overflow:hidden!important;
+  overscroll-behavior:none;
+  touch-action:none;
+  display:flex!important;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-start;
+  gap:8px;
+  background:
+    radial-gradient(circle at 20% 0%,#7770b755,transparent 36%),
+    linear-gradient(155deg,#34375d 0%,#242945 52%,#191d31 100%);
+  box-shadow:inset 0 0 0 1px #ffffff12,inset 0 -24px 60px #0000002e;
+}
+
+body.play-focus .console::before,
+.console:fullscreen::before{
+  content:"";
+  position:absolute;
+  inset:max(5px,env(safe-area-inset-top)) max(5px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-left));
+  border:1px solid #ffffff10;
+  border-radius:24px;
+  pointer-events:none;
+}
+
+body.play-focus .console-top,
+.console:fullscreen .console-top{
+  box-sizing:border-box;
+  order:0;
+  width:min(100%,560px);
+  min-height:22px;
+  padding:0 2px 2px;
+  align-items:center;
+  color:#dce9ff;
+  font-size:10px;
+  letter-spacing:.08em;
+  flex:none;
+}
+
+body.play-focus .console-top span,
+.console:fullscreen .console-top span{
+  color:#91f8d0;
+}
+
+body.play-focus .screen,
+.console:fullscreen .screen{
+  order:1;
+  flex:none;
+  width:min(100%,560px)!important;
+  max-width:min(100%,560px)!important;
+  height:auto!important;
+  max-height:calc(var(--player-height,100dvh) - 330px)!important;
+  min-width:0!important;
+  aspect-ratio:3 / 2!important;
+  border-radius:10px;
+  background:#03060b;
+  overflow:hidden;
+  box-shadow:
+    0 0 0 5px #111624,
+    0 0 0 7px #5d6380,
+    0 12px 34px #0009,
+    inset 0 0 22px #000;
+}
+
+body.play-focus .screen canvas,
+.console:fullscreen .screen canvas{
+  display:block;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%;
+  max-height:100%;
+  aspect-ratio:3 / 2;
+  object-fit:contain;
+  image-rendering:pixelated;
+  touch-action:none;
+}
+
+body.play-focus .mobbyboy-brand,
+.console:fullscreen .mobbyboy-brand{
+  order:2;
+  width:min(100%,560px);
+  display:flex;
+  align-items:baseline;
+  justify-content:center;
+  gap:8px;
+  flex:none;
+  margin:1px 0 0;
+  user-select:none;
+  -webkit-user-select:none;
+  line-height:1;
+  text-shadow:0 2px 8px #0008;
+}
+
+body.play-focus .mobbyboy-brand span,
+.console:fullscreen .mobbyboy-brand span{
+  font:800 italic clamp(18px,5vw,24px)/1 system-ui,sans-serif;
+  letter-spacing:-.055em;
+  background:linear-gradient(90deg,#ffcf66,#ff87bd,#8fdfff,#8ff4c6);
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+body.play-focus .mobbyboy-brand small,
+.console:fullscreen .mobbyboy-brand small{
+  color:#b8bed6;
+  font:700 7px/1 system-ui,sans-serif;
+  letter-spacing:.16em;
+}
+
+body.play-focus .touch-controls,
+.console:fullscreen .touch-controls{
+  box-sizing:border-box;
+  order:3;
+  display:block!important;
+  width:min(100%,560px)!important;
+  max-width:560px!important;
+  min-height:0;
+  margin:0 auto!important;
+  padding:5px 3px 2px;
+  flex:none;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:none;
+}
+
+body.play-focus .touch-controls button,
+.console:fullscreen .touch-controls button{
+  box-sizing:border-box;
+  position:relative;
+  border:1px solid #59617d;
+  background:linear-gradient(#343a54,#20263c);
+  color:#f4f7ff;
+  box-shadow:0 5px 0 #111626,0 8px 16px #0006,inset 0 1px 0 #ffffff22;
+  transition:transform 55ms ease,box-shadow 55ms ease,filter 55ms ease,background 55ms ease;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:none;
+}
+
+body.play-focus .touch-controls button.pressed,
+body.play-focus .touch-controls button:active,
+.console:fullscreen .touch-controls button.pressed,
+.console:fullscreen .touch-controls button:active{
+  transform:translateY(4px) scale(.965)!important;
+  box-shadow:0 1px 0 #111626,0 3px 8px #0007,inset 0 2px 5px #0008;
+  filter:brightness(1.18);
+}
+
+body.play-focus .touch-controls .shoulders,
+.console:fullscreen .touch-controls .shoulders{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:6px;
+}
+
+body.play-focus .touch-controls .shoulders button,
+.console:fullscreen .touch-controls .shoulders button{
+  width:92px!important;
+  min-width:92px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:4px!important;
+  border-radius:12px;
+  font-size:13px!important;
+}
+
+body.play-focus .touch-controls .pad-row,
+.console:fullscreen .touch-controls .pad-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  width:100%;
+  margin:4px 0 7px!important;
+}
+
+body.play-focus .touch-controls .dpad,
+.console:fullscreen .touch-controls .dpad{
+  display:grid;
+  grid-template-columns:repeat(3,58px)!important;
+  grid-template-rows:repeat(3,52px)!important;
+  gap:3px!important;
+}
+
+body.play-focus .touch-controls .dpad button,
+.console:fullscreen .touch-controls .dpad button{
+  width:58px!important;
+  min-width:58px!important;
+  height:52px!important;
+  min-height:52px!important;
+  padding:0!important;
+  border-radius:11px;
+  font-size:17px!important;
+}
+
+body.play-focus .touch-controls .ab,
+.console:fullscreen .touch-controls .ab{
+  display:flex;
+  align-items:center;
+  gap:14px!important;
+  padding:8px 3px!important;
+  transform:rotate(-9deg);
+}
+
+body.play-focus .touch-controls .ab button,
+.console:fullscreen .touch-controls .ab button{
+  width:72px!important;
+  min-width:72px!important;
+  height:72px!important;
+  min-height:72px!important;
+  padding:0!important;
+  border-radius:50%;
+  border-color:#76586d;
+  background:linear-gradient(#bc638d,#7d3d64);
+  font-size:22px!important;
+  font-weight:850;
+}
+
+body.play-focus .touch-controls .ab button:last-child,
+.console:fullscreen .touch-controls .ab button:last-child{
+  transform:translateY(-13px);
+}
+
+body.play-focus .touch-controls .ab button:last-child.pressed,
+body.play-focus .touch-controls .ab button:last-child:active,
+.console:fullscreen .touch-controls .ab button:last-child.pressed,
+.console:fullscreen .touch-controls .ab button:last-child:active{
+  transform:translateY(-9px) scale(.965)!important;
+}
+
+body.play-focus .touch-controls .system-buttons,
+.console:fullscreen .touch-controls .system-buttons{
+  display:flex;
+  justify-content:center;
+  gap:18px!important;
+  margin-top:1px;
+}
+
+body.play-focus .touch-controls .system-buttons button,
+.console:fullscreen .touch-controls .system-buttons button{
+  min-width:92px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:4px 18px!important;
+  border-radius:999px;
+  font-size:10px!important;
+  letter-spacing:.12em;
+}
+
+body.play-focus .quick-controls,
+.console:fullscreen .quick-controls{
+  display:contents!important;
+}
+
+body.play-focus #pauseBtn,
+body.play-focus #fullBtn,
+.console:fullscreen #pauseBtn,
+.console:fullscreen #fullBtn{
+  position:absolute;
+  z-index:5;
+  top:max(10px,env(safe-area-inset-top));
+  min-height:44px;
+  margin:0;
+  border-color:#59617d;
+  background:#171d2be8;
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 5px 16px #0007;
+}
+
+body.play-focus #pauseBtn,
+.console:fullscreen #pauseBtn{
+  left:max(10px,env(safe-area-inset-left));
+  width:66px;
+  padding:7px;
+  font-size:11px;
+}
+
+body.play-focus #fullBtn,
+.console:fullscreen #fullBtn{
+  right:max(10px,env(safe-area-inset-right));
+  width:auto;
+  padding:7px 12px;
+  font-size:11px;
+}
+
+@media (max-width:420px) and (orientation:portrait){
+  body.play-focus .console,
+  .console:fullscreen{
+    gap:6px;
+    padding-left:max(10px,env(safe-area-inset-left));
+    padding-right:max(10px,env(safe-area-inset-right));
+  }
+  body.play-focus .screen,
+  .console:fullscreen .screen{
+    width:min(100%,calc((var(--player-height,100dvh) - 318px) * 1.5))!important;
+    max-height:calc(var(--player-height,100dvh) - 318px)!important;
+  }
+  body.play-focus .touch-controls .dpad,
+  .console:fullscreen .touch-controls .dpad{
+    grid-template-columns:repeat(3,54px)!important;
+    grid-template-rows:repeat(3,49px)!important;
+  }
+  body.play-focus .touch-controls .dpad button,
+  .console:fullscreen .touch-controls .dpad button{
+    width:54px!important;
+    min-width:54px!important;
+    height:49px!important;
+    min-height:49px!important;
+  }
+  body.play-focus .touch-controls .ab button,
+  .console:fullscreen .touch-controls .ab button{
+    width:68px!important;
+    min-width:68px!important;
+    height:68px!important;
+    min-height:68px!important;
+  }
+}
+
+@media (orientation:landscape) and (max-height:600px){
+  body.play-focus .console,
+  .console:fullscreen{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(270px,34vw);
+    grid-template-rows:28px minmax(0,1fr);
+    column-gap:16px;
+    row-gap:3px;
+    align-items:center;
+    padding:
+      max(8px,env(safe-area-inset-top))
+      max(12px,env(safe-area-inset-right))
+      max(8px,env(safe-area-inset-bottom))
+      max(12px,env(safe-area-inset-left));
+  }
+  body.play-focus .console-top,
+  .console:fullscreen .console-top{
+    grid-column:1;
+    grid-row:1;
+    width:100%;
+    padding:0 4px;
+    align-self:end;
+  }
+  body.play-focus .screen,
+  .console:fullscreen .screen{
+    grid-column:1;
+    grid-row:2;
+    width:min(100%,calc((var(--player-height,100dvh) - 54px) * 1.5))!important;
+    max-width:100%!important;
+    max-height:calc(var(--player-height,100dvh) - 54px)!important;
+    align-self:start;
+    justify-self:center;
+  }
+  body.play-focus .mobbyboy-brand,
+  .console:fullscreen .mobbyboy-brand{
+    grid-column:2;
+    grid-row:1;
+    width:100%;
+    margin:0;
+    justify-self:center;
+    align-self:center;
+  }
+  body.play-focus .mobbyboy-brand span,
+  .console:fullscreen .mobbyboy-brand span{
+    font-size:19px;
+  }
+  body.play-focus .touch-controls,
+  .console:fullscreen .touch-controls{
+    grid-column:2;
+    grid-row:2;
+    width:100%!important;
+    max-width:none!important;
+    align-self:center;
+    padding:0 2px;
+  }
+  body.play-focus .touch-controls .shoulders,
+  .console:fullscreen .touch-controls .shoulders{
+    margin-bottom:3px;
+  }
+  body.play-focus .touch-controls .shoulders button,
+  .console:fullscreen .touch-controls .shoulders button{
+    width:78px!important;
+    min-width:78px!important;
+    height:38px!important;
+    min-height:38px!important;
+  }
+  body.play-focus .touch-controls .pad-row,
+  .console:fullscreen .touch-controls .pad-row{
+    margin:2px 0 4px!important;
+  }
+  body.play-focus .touch-controls .dpad,
+  .console:fullscreen .touch-controls .dpad{
+    grid-template-columns:repeat(3,48px)!important;
+    grid-template-rows:repeat(3,43px)!important;
+  }
+  body.play-focus .touch-controls .dpad button,
+  .console:fullscreen .touch-controls .dpad button{
+    width:48px!important;
+    min-width:48px!important;
+    height:43px!important;
+    min-height:43px!important;
+    font-size:14px!important;
+  }
+  body.play-focus .touch-controls .ab,
+  .console:fullscreen .touch-controls .ab{
+    gap:9px!important;
+    padding:4px 0!important;
+  }
+  body.play-focus .touch-controls .ab button,
+  .console:fullscreen .touch-controls .ab button{
+    width:60px!important;
+    min-width:60px!important;
+    height:60px!important;
+    min-height:60px!important;
+    font-size:19px!important;
+  }
+  body.play-focus .touch-controls .system-buttons,
+  .console:fullscreen .touch-controls .system-buttons{
+    gap:10px!important;
+  }
+  body.play-focus .touch-controls .system-buttons button,
+  .console:fullscreen .touch-controls .system-buttons button{
+    min-width:82px!important;
+    height:40px!important;
+    min-height:40px!important;
+    padding:4px 12px!important;
+  }
+  body.play-focus #pauseBtn,
+  body.play-focus #fullBtn,
+  .console:fullscreen #pauseBtn,
+  .console:fullscreen #fullBtn{
+    top:max(7px,env(safe-area-inset-top));
+    min-height:40px;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  body.play-focus .touch-controls button,
+  .console:fullscreen .touch-controls button{
+    transition:none;
+  }
+}
+
+@media (orientation:portrait){
+  body.play-focus .touch-controls,
+  .console:fullscreen .touch-controls{
+    margin-top:auto!important;
+    margin-bottom:4px!important;
+  }
+}
