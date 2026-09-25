@@ -1,14 +1,17 @@
 import {games,getGame,putGame,updateGame} from './play-store.js';
+import {installCloudPanel} from './cloud-ui.js';
+import * as cloud from './cloud.js';
 const $=id=>document.getElementById(id);let all=[],editing=null,queue=Promise.resolve();
 const title=g=>g.title||g.name.replace(/\.gba$/i,'');
 const message=t=>$('libraryStatus').textContent=t;
 const url=g=>'play.html?game='+encodeURIComponent(g.id);
 function run(fn){queue=queue.then(fn).catch(e=>{const text=e.message||String(e);message(text);if($('editGameDialog').open)$('coverStatus').textContent=text;});return queue;}
-async function refresh(){all=await games();render();}
+async function refresh(){await cloud.ready;all=(await games()).filter(g=>!g.cloudOwner||g.cloudOwner===cloud.user()?.id);render();}
 function render(){
  $('gameCount').textContent=all.length;$('favoriteCount').textContent=all.filter(g=>g.favorite).length;
  const recent=[...all].filter(g=>g.lastPlayed).sort((a,b)=>b.lastPlayed-a.lastPlayed)[0];
  if(recent){$('heroTitle').textContent=title(recent);$('heroText').textContent='การผจญภัยครั้งล่าสุดกำลังรอคุณอยู่ • เล่นต่อจากจุดที่บันทึกในเครื่องนี้';$('resumeGame').hidden=false;$('resumeGame').href=url(recent);$('heroAdd').hidden=true;const art=$('heroArt');art.querySelector('img')?.remove();art.classList.toggle('has-cover',!!recent.cover);if(recent.cover){const img=new Image();img.src=recent.cover;img.alt='';art.append(img);}}
+ if(!recent){$('heroTitle').textContent='ทุกการผจญภัย ในคอลเลกชันเดียว';$('heroText').textContent='เพิ่มเกมในเครื่อง หรือเข้าสู่ระบบเพื่อดูคอลเลกชัน Cloud ของคุณ';$('resumeGame').hidden=true;$('resumeGame').removeAttribute('href');$('heroAdd').hidden=false;$('heroArt').querySelector('img')?.remove();$('heroArt').classList.remove('has-cover');}
  const search=$('searchGames').value.toLocaleLowerCase();let list=all.filter(g=>title(g).toLocaleLowerCase().includes(search)&&($('filterGames').value!=='favorites'||g.favorite));
  list.sort($('sortGames').value==='name'?(a,b)=>title(a).localeCompare(title(b)):(a,b)=>(b.lastPlayed||0)-(a.lastPlayed||0));
  const grid=$('libraryGrid');grid.replaceChildren();
@@ -39,4 +42,4 @@ $('closeEdit').onclick=()=>$('editGameDialog').close();
 async function coverData(file){if(!['image/png','image/jpeg','image/webp'].includes(file.type)||file.size>8*1048576)throw Error('เลือก PNG / JPG / WebP ไม่เกิน 8 MB');const bmp=await createImageBitmap(file);try{if(!bmp.width||!bmp.height)throw Error('ภาพไม่สมบูรณ์');const c=document.createElement('canvas');c.width=600;c.height=400;const ctx=c.getContext('2d'),scale=Math.max(c.width/bmp.width,c.height/bmp.height);ctx.drawImage(bmp,(600-bmp.width*scale)/2,(400-bmp.height*scale)/2,bmp.width*scale,bmp.height*scale);return c.toDataURL('image/jpeg',.84);}finally{bmp.close();}}
 $('editGameForm').onsubmit=e=>{e.preventDefault();run(async()=>{const name=$('gameTitle').value.trim();if(!name)throw Error('กรุณาตั้งชื่อเกม');const patch={title:name},file=$('coverInput').files[0];if(file)patch.cover=await coverData(file);await updateGame(editing.id,patch);$('editGameDialog').close();await refresh();message('บันทึกชื่อและปกแล้ว');});};
 $('keepStorage').onclick=()=>run(async()=>{if(!navigator.storage?.persist)throw Error('เบราว์เซอร์นี้ไม่มีตัวเลือกเก็บข้อมูลถาวร กรุณาสำรองเซฟเป็นไฟล์');message(await navigator.storage.persist()?'เบราว์เซอร์อนุญาตให้เก็บข้อมูลถาวรแล้ว • ยังคงควรสำรองเซฟ':'เบราว์เซอร์ยังไม่อนุญาต • สำรองเซฟก่อนล้างข้อมูลหรือเมื่อพื้นที่ใกล้เต็ม');});
-window.addEventListener('pageshow',()=>run(refresh));await run(refresh);
+window.addEventListener('pageshow',()=>run(refresh));await run(refresh);await installCloudPanel(refresh);

@@ -1,7 +1,9 @@
 // Keep user data out of the cache. Old tabs finish on the old release; no skipWaiting.
-const CACHE='soulgold-shell-collection-v4-0-2';
+const CACHE='soulgold-shell-collection-v4-1-0';
 const SHELL=['./','./index.html','./play.html','./companion.html','./collection.css','./play.css','./play-collection.css','./library.js','./play.js','./play-store.js','./bag-core.js','./bag-ui.js','./item-data.js','./confirm-ui.js','./shared.js','./shell.js','./journey-core.js','./app.webmanifest','./modules/source-profile.js','./modules/journey-maps.js','./modules/SoulGold_Companion.html','./modules/companion.js','./modules/companion.css','./modules/companion-enhancements.css','./modules/companion-enhancements.js','./modules/guide-theme.css','./vendor/mgba/mgba.sdk.js','./vendor/mgba/mgba.config.js','./vendor/mgba/mgba.manifest.js','./vendor/mgba/mgba.options.js','./vendor/mgba/mgba.zip.js','./vendor/mgba/mgba.js','./vendor/mgba/mgba.wasm'];
 SHELL.push('./play-layout.css');
+SHELL.push('./cloud.js','./cloud-ui.js','./cloud-core.js','./cloud-config.js','./cloud.css','./vendor/supabase/supabase.js');
+SHELL.push('./type-chart.js','./type-chart-data.js','./play-three-panel.css','./modules/guide-sprites.js','./modules/guide-sprites.css');
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('soulgold-shell-')&&k!==CACHE).map(async k=>{const c=await caches.open(k);for(const r of await c.keys())if(r.url.startsWith(self.registration.scope))await c.delete(r);})))));
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url),scope=new URL(self.registration.scope);if(e.request.method!=='GET'||u.origin!==scope.origin||!u.pathname.startsWith(scope.pathname))return;const rel='./'+u.pathname.slice(scope.pathname.length);if(!SHELL.includes(rel))return;e.respondWith(caches.open(CACHE).then(async c=>(await c.match(new URL(rel,scope).href))||fetch(e.request)));});

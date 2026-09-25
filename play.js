@@ -3,6 +3,11 @@ import {CORE_VERSION,getGame,updateGame,getSave,putSave,encodeSave,decodeSave} f
 const $=id=>document.getElementById(id);
 import {installBagTools} from './bag-ui.js';
 import {ask} from './confirm-ui.js';
+import * as cloud from './cloud.js';
+import './type-chart.js';
+let cloudTimer;
+const cloudIndicator=document.createElement('p');cloudIndicator.className='cloud-indicator';document.querySelector('.journey-side .play-card').prepend(cloudIndicator);
+async function syncCloudNow(){if(!game?.cloudOwner)return;cloudIndicator.textContent='กำลังส่งเซฟขึ้น Cloud…';try{await cloud.pushGame(game.id);cloudIndicator.textContent='✓ ซิงค์ Cloud แล้ว · '+new Date().toLocaleTimeString('th-TH');}catch(e){cloudIndicator.textContent='ยังไม่ซิงค์ • '+e.message;throw e;}}
 let engine=null,game=null,paused=false,busy=false,saving=null,releaseLock=null,baseline=null,oldJourney=null,lastBatteryHash='',timer;
 const pointers=new Map();
 function status(text){$('playStatus').textContent=text;}
@@ -11,16 +16,17 @@ function activeButtons(enabled){for(const id of ['pauseBtn','saveNow','exportBun
 activeButtons(false);
 async function guard(fn){if(busy)return;busy=true;try{if(saving)await saving;await fn();}catch(e){fail(e);}finally{busy=false;}}
 function releaseInput(){pointers.clear();engine?.releaseButtons();document.querySelectorAll('[data-bit]').forEach(b=>b.classList.remove('pressed'));}
-function setPaused(value){if(!engine)return;paused=value;releaseInput();value?engine.pause():engine.resume();$('pauseBtn').textContent=value?'เล่นต่อ':'พักเกม';}
+function setPaused(value){if(!engine)return;if(!value)cloud.requireOwner(game);paused=value;releaseInput();value?engine.pause():engine.resume();$('pauseBtn').textContent=value?'เล่นต่อ':'พักเกม';}
 async function stopGame(){
  if(engine){
   setPaused(true);
   if(saving)await saving;
   // Failure leaves the game paused and recoverable; never leave before IDB commits.
   await saveNow(false);
+  try{await syncCloudNow();}catch(e){if(!await ask('เซฟอยู่ในเครื่องแล้ว แต่ Cloud ยังไม่สำเร็จ: '+e.message+' • ออกจากเกมโดยเก็บเซฟไว้ในเครื่องก่อนหรือไม่? อย่าเพิ่งสลับไปเล่นอีกเครื่อง'))throw e;}
   engine.destroy();engine=null;document.body.classList.remove('game-loaded');focusMode(false);
  }
- clearInterval(timer);timer=null;releaseLock?.();releaseLock=null;
+ clearInterval(timer);clearInterval(cloudTimer);timer=null;releaseLock?.();releaseLock=null;
  game=null;baseline=null;oldJourney=null;lastBatteryHash='';paused=false;
  releaseInput();activeButtons(false);$('screenCover').hidden=false;$('gameName').textContent='GAME BOY ADVANCE';$('fps').textContent='● READY';$('pauseBtn').textContent='พักเกม';$('speedSelect').value='1';$('soulgoldMode').checked=false;
  renderJourney(null);status('บันทึกแล้วและปิดเกมแล้ว • เลือกเกมในคลังเพื่อเล่นต่อ');
@@ -36,6 +42,8 @@ async function boot(g){
  activeButtons(false);status('กำลังเปิด '+g.name+'…');
  releaseLock=await lockGame(g.id);
  try{
+  await cloud.ready;cloud.requireOwner(g);
+  try{g=await cloud.prepareGame(g);}catch(e){if(!await ask('ตรวจเซฟ Cloud ไม่สำเร็จ: '+e.message+' • เล่นต่อจากเซฟในเครื่องแบบออฟไลน์หรือไม่? อาจไม่ใช่เซฟล่าสุด'))throw e;}
   game=g;baseline=null;oldJourney=null;lastBatteryHash='';$('soulgoldMode').checked=!!g.soulgold;$('gameName').textContent=g.title||g.name;
   const local=await getSave(g.id);
   engine=await load({canvasEl:$('gameCanvas'),assets:{rom:new Uint8Array(g.rom)},storageNamespace:g.id,persist:null,options:{system:'gba',volume:+$('volume').value,gamepads:true},onEvent:e=>{if(e.type==='frame')$('fps').textContent=Math.round(e.fps)+' FPS';}});
@@ -44,9 +52,11 @@ async function boot(g){
   renderJourney(null);if(local?.battery)await updateJourney(new Uint8Array(local.battery),local.state);
   $('saveStatus').textContent=local?'เล่นต่อจาก '+new Date(local.updatedAt).toLocaleString('th-TH'):'เริ่มเกมใหม่ • จะบันทึกจุดเล่นต่อใน 8 วินาที';
   timer=setInterval(()=>{if(engine&&!paused&&!busy)saveNow(false).catch(fail);},8000);
+  cloudIndicator.textContent=g.cloudOwner?'เชื่อม Cloud • ส่งเซฟทุก 60 วินาทีและตอนบันทึกออก':'ยังไม่เชื่อมเกมนี้กับ Cloud • เปิดบัญชีที่หน้าคลังเกม';
+  cloudTimer=setInterval(()=>{if(engine&&game?.cloudOwner&&!busy)syncCloudNow().catch(()=>{});},60000);
   game=await updateGame(g.id,{lastPlayed:Date.now()});SG.write('last-game',g.id);
   status('พร้อมเล่น • เซฟจุดเล่นต่ออัตโนมัติในเครื่อง • ใช้เมนู Save ในเกมด้วยเพื่อสร้าง .sav');$('gameCanvas').focus({preventScroll:true});
- }catch(e){engine?.destroy();engine=null;clearInterval(timer);activeButtons(false);releaseLock?.();releaseLock=null;throw e;}
+ }catch(e){engine?.destroy();engine=null;clearInterval(timer);clearInterval(cloudTimer);activeButtons(false);releaseLock?.();releaseLock=null;throw e;}
 }
 async function saveNow(notify=true){
  if(!engine||!game)return;if(saving)return saving;
@@ -79,7 +89,7 @@ async function updateJourney(battery,state){
 }
 async function applyRecord(record){setPaused(true);if(saving)await saving;if(record.battery)engine.loadBatterySave(new Uint8Array(record.battery));await engine.loadState(new Uint8Array(record.state));baseline=null;oldJourney=null;lastBatteryHash='';await saveNow(false);status('โหลดจุดเล่นต่อแล้ว กด “เล่นต่อ” เมื่อพร้อม');}
 $('pauseBtn').onclick=()=>guard(async()=>{setPaused(!paused);if(paused)await saveNow(false);});
-$('saveNow').onclick=()=>guard(()=>saveNow());
+$('saveNow').onclick=()=>guard(async()=>{await saveNow();await syncCloudNow();});
 $('importQuick').onclick=()=>{if(!busy&&engine)$('saveInput').click();};
 $('speedSelect').onchange=e=>{if(!engine)return;try{engine.setSpeed(Number(e.target.value));SG.toast(engine.getSpeed()===1?'ความเร็วปกติ':'เร่ง '+engine.getSpeed()+'× • '+($('fastAudio').checked?'เปิดเสียง':'ปิดเสียง'));$('gameCanvas').focus({preventScroll:true});}catch(error){e.target.value=String(engine.getSpeed());fail(error);}};
 $('fastAudio').checked=SG.read('fast-audio',false)===true;
@@ -118,6 +128,7 @@ $('symbolsInput').onchange=e=>guard(async()=>{const f=e.target.files[0];e.target
 $('clearSymbols').onclick=()=>guard(async()=>{if(!game)return;game=await updateGame(game.id,{symbols:null});SG.toast('ปิดตัวอ่านสดแล้ว');});
 window.addEventListener('blur',releaseInput);
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&engine){setPaused(true);saveNow(false).catch(fail);}});
+window.addEventListener('sg-cloud-auth',()=>{if(engine&&game?.cloudOwner&&game.cloudOwner!==cloud.user()?.id){setPaused(true);saveNow(false).catch(fail);cloudIndicator.textContent='บัญชีหมดอายุหรือเปลี่ยนแล้ว • พักเกมไว้และเก็บเซฟในเครื่อง กรุณากลับคลังแล้วเข้าสู่ระบบเจ้าของเกม';}});
 window.addEventListener('pagehide',()=>{releaseInput();if(engine){engine.pause();saveNow(false).catch(()=>{});}});
 window.addEventListener('beforeunload',e=>{if(saving){e.preventDefault();e.returnValue='';}});
 // Live checks use the same read-only adapter. No disk or cloud writes each tick.

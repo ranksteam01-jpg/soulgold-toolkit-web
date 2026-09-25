@@ -8,13 +8,16 @@ export const games=()=>transaction('games','readonly',s=>s.getAll());
 export const putGame=game=>transaction('games','readwrite',s=>s.put(game));
 // Merge metadata inside one transaction so another tab cannot replace ROM or newer metadata.
 export async function updateGame(id,patch){
- const allowed=['title','cover','favorite','lastPlayed','soulgold','symbols'];
+ const allowed=['title','cover','favorite','lastPlayed','soulgold','symbols','cloudOwner','cloudRevision','cloudRom'];
  if(Object.keys(patch).some(k=>!allowed.includes(k)))throw Error('Invalid game metadata');
  const db=await openStore();return new Promise((resolve,reject)=>{const tx=db.transaction('games','readwrite'),s=tx.objectStore('games');let result;const r=s.get(id);r.onsuccess=()=>{if(!r.result){tx.abort();return;}result={...r.result,...patch};s.put(result);};tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('ไม่พบเกมในคลัง'));});
 }
 export const getSave=id=>transaction('saves','readonly',s=>s.get(id));
 export async function putSave(save){
- const db=await openStore();return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite'),store=tx.objectStore('saves');const req=store.get(save.id);req.onsuccess=()=>{const old=req.result;store.put({...save,toolBackup:save.toolBackup??old?.toolBackup??null,previous:old?{...old,previous:undefined,toolBackup:undefined}:null});};tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('บันทึกไม่สำเร็จ'));});
+ const db=await openStore();return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite'),store=tx.objectStore('saves');const req=store.get(save.id);req.onsuccess=()=>{const old=req.result;store.put({...save,localVersion:crypto.randomUUID(),cloud:save.cloud??old?.cloud??null,toolBackup:save.toolBackup??old?.toolBackup??null,previous:old?{...old,previous:undefined,toolBackup:undefined}:null});};tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('บันทึกไม่สำเร็จ'));});
+}
+export async function acknowledgeCloud(id,user,revision,version){
+ const db=await openStore();return new Promise((resolve,reject)=>{const tx=db.transaction('saves','readwrite'),s=tx.objectStore('saves'),r=s.get(id);r.onsuccess=()=>{if(r.result)s.put({...r.result,cloud:{user,revision,syncedVersion:version}});};tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||Error('Cloud acknowledgement failed'));});
 }
 export const markSynced=save=>transaction('saves','readwrite',s=>s.put(save));
 export function toBase64(bytes){if(!bytes)return null;let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s);}
