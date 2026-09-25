@@ -1,6 +1,187 @@
-/* Mobile fullscreen/focus hotfix. Presentation only: reuses the original canvas and controls. */
+/* mobbyboy Pocket Arcade — mobile player presentation layer.
+   The real emulator canvas + original wired controls are reused unchanged. */
+
+:root{
+  --mb-ink:#070b12;
+  --mb-shell:#151b2a;
+  --mb-shell-hi:#252f46;
+  --mb-line:#4c5a73;
+  --mb-mint:#82f5d0;
+  --mb-cyan:#6fd9ff;
+  --mb-blue:#7194ff;
+  --mb-pink:#d66aa5;
+  --mb-text:#f4f8ff;
+  --mb-muted:#9daac0;
+}
+
 .mobbyboy-brand{display:none}
 
+/* ---------- normal mobile player: premium shell + smooth page ---------- */
+@media (max-width:920px){
+  body{
+    background:
+      radial-gradient(circle at 50% -8%,#18384a 0,transparent 32rem),
+      linear-gradient(180deg,#08121c 0,#09111a 58%,#070d14 100%);
+  }
+
+  .play-main{overflow:clip}
+
+  .console{
+    border:1px solid #52637c;
+    border-radius:30px;
+    background:
+      radial-gradient(circle at 20% -4%,#40527755 0,transparent 34%),
+      linear-gradient(155deg,#283248 0%,#171f30 48%,#111826 100%);
+    box-shadow:
+      0 30px 70px #0008,
+      inset 0 1px 0 #ffffff18,
+      inset 0 -1px 0 #0009;
+  }
+
+  .console::before{
+    content:"";
+    position:absolute;
+    inset:7px;
+    border:1px solid #ffffff0d;
+    border-radius:23px;
+    pointer-events:none;
+  }
+
+  .game-loaded .mobbyboy-brand{
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:8px;
+    margin:9px 0 4px;
+    pointer-events:none;
+    user-select:none;
+  }
+
+  .mobbyboy-brand span{
+    font:850 italic clamp(19px,5.8vw,25px)/1 system-ui,sans-serif;
+    letter-spacing:-.065em;
+    background:linear-gradient(90deg,#f4c96a 0%,#e889b3 28%,#73d8ff 60%,#7ef2c9 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 3px 9px #0008);
+  }
+
+  .mobbyboy-brand small{
+    color:#b8c3d6;
+    font:750 7px/1 system-ui,sans-serif;
+    letter-spacing:.22em;
+  }
+
+  .screen{
+    border:1px solid #6c7a91;
+    box-shadow:
+      0 0 0 5px #0a1019,
+      0 0 0 7px #354056,
+      0 16px 32px #0008,
+      inset 0 0 28px #000;
+  }
+
+  .screen::after{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:4;
+    pointer-events:none;
+    background:linear-gradient(120deg,#ffffff0c 0%,transparent 28%,transparent 72%,#6fe0ff08 100%);
+    mix-blend-mode:screen;
+  }
+
+  .touch-controls button{
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+    -webkit-user-select:none;
+    -webkit-touch-callout:none;
+  }
+
+  .game-loaded:not(.play-focus) .touch-controls{
+    padding:8px 4px 4px;
+  }
+
+  .game-loaded:not(.play-focus) .touch-controls button{
+    border-color:#56657d;
+    background:linear-gradient(180deg,#2f3a51,#1c2638);
+    color:#f6f9ff;
+    box-shadow:0 4px 0 #09101a,0 8px 14px #0005,inset 0 1px 0 #ffffff1c;
+    text-shadow:0 1px 2px #0009;
+    transition:transform 45ms ease,box-shadow 45ms ease,filter 45ms ease;
+  }
+
+  .game-loaded:not(.play-focus) .touch-controls button.pressed,
+  .game-loaded:not(.play-focus) .touch-controls button:active{
+    transform:translateY(2px) scale(.96);
+    box-shadow:0 1px 0 #09101a,0 3px 8px #0007,inset 0 3px 6px #0008;
+    filter:brightness(1.14);
+  }
+
+  .game-loaded:not(.play-focus) .touch-controls .shoulders button{
+    width:104px;min-height:44px;border-radius:14px 14px 19px 19px;
+  }
+
+  .game-loaded:not(.play-focus) .touch-controls .dpad{
+    grid-template-columns:repeat(3,50px);
+    grid-template-rows:repeat(3,48px);
+  }
+  .game-loaded:not(.play-focus) .touch-controls .dpad button{min-width:50px;min-height:48px;border-radius:11px}
+
+  .game-loaded:not(.play-focus) .touch-controls .ab button{
+    width:68px;height:68px;min-width:68px;min-height:68px;
+    border-color:#94617f;
+    background:radial-gradient(circle at 35% 25%,#d77eaa,#b65385 43%,#7c3b62 100%);
+    color:white;
+    box-shadow:0 5px 0 #341d32,0 10px 18px #0006,inset 0 2px 2px #ffffff2d;
+  }
+
+  .game-loaded:not(.play-focus) .touch-controls .system-buttons button{
+    min-width:96px;min-height:38px;border-radius:999px;letter-spacing:.13em;
+  }
+
+  .game-loaded:not(.play-focus) .quick-controls button,
+  .game-loaded:not(.play-focus) .primary-controls button{
+    border-color:#3f5d73;
+    background:linear-gradient(180deg,#20394d,#172a3c);
+    box-shadow:inset 0 1px 0 #ffffff10,0 6px 14px #0002;
+  }
+
+  .play-card{
+    border-color:#334b5f;
+    background:linear-gradient(155deg,#142a3bfa,#0e1c2afa);
+    box-shadow:0 16px 34px #0003,inset 0 1px 0 #ffffff09;
+  }
+
+  .play-card::before{
+    content:"";
+    display:block;
+    width:44px;
+    height:2px;
+    margin:-5px 0 12px;
+    border-radius:99px;
+    background:linear-gradient(90deg,var(--mb-mint),var(--mb-cyan),transparent);
+    opacity:.72;
+    pointer-events:none;
+  }
+}
+
+/* IntersectionObserver reveal: transform + opacity only, no scroll repaint loop. */
+@media (max-width:920px) and (prefers-reduced-motion:no-preference){
+  body.player-motion [data-player-reveal]{
+    opacity:0;
+    transform:translate3d(0,14px,0) scale(.992);
+    transition:opacity .48s ease,transform .58s cubic-bezier(.2,.75,.22,1);
+  }
+  body.player-motion [data-player-reveal].is-revealed{
+    opacity:1;
+    transform:none;
+  }
+}
+
+
+/* ---------- dedicated CSS fullscreen / focus mode ---------- */
 html.player-fullscreen,
 body.play-focus{
   width:100%;
@@ -10,7 +191,9 @@ body.play-focus{
 }
 
 body.play-focus{
-  background:#0a0d18;
+  background:
+    radial-gradient(circle at 50% -12%,#2f2a7a 0%,transparent 36%),
+    linear-gradient(180deg,#080b15 0%,#070b12 100%);
 }
 
 body.play-focus .app-header,
@@ -49,26 +232,35 @@ body.play-focus .play-layout{
   overflow:hidden!important;
   overscroll-behavior:none;
   display:block;
-  background:#0a0d18;
+  background:
+    radial-gradient(circle at 50% -16%,#2f2a7a 0%,transparent 36%),
+    linear-gradient(180deg,#090d17 0%,#070a11 100%);
 }
 
 body.play-focus .console,
 .console:fullscreen{
+  --shell-top:#634deb;
+  --shell-mid:#4d39c3;
+  --shell-low:#4331af;
+  --shell-shadow:#2f247f;
+  --shell-edge:#261d66;
+  --shell-glow:#79e4ff;
+  --shell-mint:#8ff2d8;
+  --shell-face:#f2f5fa;
+  --shell-face-shadow:#d7dce8;
   box-sizing:border-box;
   position:relative!important;
   inset:auto!important;
-  top:auto!important;
   width:100%!important;
   max-width:none!important;
   height:100%!important;
   min-height:0!important;
-  max-height:none!important;
   margin:0!important;
   padding:
-    max(10px,env(safe-area-inset-top))
-    max(12px,env(safe-area-inset-right))
-    max(20px,env(safe-area-inset-bottom))
-    max(12px,env(safe-area-inset-left));
+    max(8px,env(safe-area-inset-top))
+    max(10px,env(safe-area-inset-right))
+    max(16px,env(safe-area-inset-bottom))
+    max(10px,env(safe-area-inset-left));
   border:0;
   border-radius:0;
   overflow:hidden!important;
@@ -78,44 +270,95 @@ body.play-focus .console,
   flex-direction:column;
   align-items:center;
   justify-content:flex-start;
-  gap:6px;
+  gap:0;
+  color:var(--mb-text);
   background:
-    radial-gradient(circle at 20% 0%,#7770b755,transparent 36%),
-    linear-gradient(155deg,#34375d 0%,#242945 52%,#191d31 100%);
-  box-shadow:inset 0 0 0 1px #ffffff12,inset 0 -24px 60px #0000002e;
+    radial-gradient(circle at 50% 0%,#7c63ff55 0%,transparent 34%),
+    linear-gradient(180deg,var(--shell-top) 0%,var(--shell-mid) 41%,var(--shell-low) 61%,#4a37be 100%);
+  box-shadow:inset 0 1px 0 #ffffff18;
+  isolation:isolate;
 }
 
-/* Decorative layers must never intercept game touches. */
 body.play-focus .console::before,
 .console:fullscreen::before{
   content:"";
   position:absolute;
-  z-index:10;
-  inset:max(5px,env(safe-area-inset-top)) max(5px,env(safe-area-inset-right)) max(5px,env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-left));
-  border:1px solid #ffffff10;
-  border-radius:24px;
+  z-index:1;
+  inset:max(4px,env(safe-area-inset-top)) max(4px,env(safe-area-inset-right)) max(4px,env(safe-area-inset-bottom)) max(4px,env(safe-area-inset-left));
+  border-radius:28px;
+  border:1px solid #ffffff12;
+  box-shadow:inset 0 0 0 1px #2c225f88;
   pointer-events:none;
+}
+
+body.play-focus .console::after,
+.console:fullscreen::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  top:18px;
+  left:50%;
+  width:42px;
+  height:42px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#6f58ef,#4f3bc6 68%,#3b2d97 100%);
+  box-shadow:inset 0 2px 4px #ffffff20,inset 0 -8px 12px #281c76a0,0 2px 10px #0000001c;
+  pointer-events:none;
+  opacity:.8;
+}
+
+body.focus-entering .console,
+body.focus-entering .console:fullscreen{
+  animation:mobby-focus-in .28s cubic-bezier(.18,.82,.24,1) both;
+}
+
+@keyframes mobby-focus-in{
+  from{opacity:.58;transform:scale(.985) translateY(5px)}
+  to{opacity:1;transform:none}
 }
 
 body.play-focus .console-top,
 .console:fullscreen .console-top{
   box-sizing:border-box;
   position:relative;
-  z-index:30;
+  z-index:40;
   order:0;
-  width:min(100%,560px);
-  min-height:20px;
-  padding:0 2px;
+  width:min(100%,620px);
+  height:42px;
+  min-height:42px;
+  padding:0 82px;
+  display:flex;
   align-items:center;
-  color:#dce9ff;
-  font-size:10px;
-  letter-spacing:.08em;
+  justify-content:center;
+  color:#d7def5;
+  font-size:9px;
+  letter-spacing:.16em;
   flex:none;
   pointer-events:none;
 }
 
+body.play-focus .console-top b,
+.console:fullscreen .console-top b{display:none}
+
 body.play-focus .console-top span,
-.console:fullscreen .console-top span{color:#91f8d0}
+.console:fullscreen .console-top span{
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  color:#d8e3f5;
+  opacity:.92;
+}
+
+body.play-focus .console-top span::before,
+.console:fullscreen .console-top span::before{
+  content:"";
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:var(--shell-mint);
+  box-shadow:0 0 10px #7ff1cfbb;
+}
 
 body.play-focus .screen,
 .console:fullscreen .screen{
@@ -123,17 +366,45 @@ body.play-focus .screen,
   position:relative;
   z-index:20;
   order:1;
-  flex:0 1 auto;
-  width:min(100%,560px)!important;
-  max-width:min(100%,560px)!important;
+  flex:0 0 auto;
+  width:min(100%,640px)!important;
+  max-width:min(100%,640px)!important;
   height:auto!important;
-  max-height:calc(var(--player-height,100dvh) - 390px)!important;
+  max-height:calc(var(--player-height,100dvh) - 438px)!important;
   min-width:0!important;
-  aspect-ratio:3 / 2!important;
-  border-radius:10px;
-  background:#03060b;
+  aspect-ratio:3/2!important;
+  margin-top:2px;
+  border:1px solid #100d17;
+  border-radius:18px;
+  background:#030407;
   overflow:hidden;
-  box-shadow:0 0 0 5px #111624,0 0 0 7px #5d6380,0 12px 34px #0009,inset 0 0 22px #000;
+  box-shadow:
+    0 0 0 10px #07070b,
+    0 0 0 12px #1d182e,
+    0 14px 20px #00000055,
+    0 26px 44px #00000040,
+    inset 0 0 28px #000;
+}
+
+body.play-focus .screen::before,
+.console:fullscreen .screen::before{
+  content:"";
+  position:absolute;
+  z-index:5;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(120deg,#ffffff0e 0%,transparent 18%,transparent 72%,#59e4ff08 100%);
+  mix-blend-mode:screen;
+}
+
+body.play-focus .screen::after,
+.console:fullscreen .screen::after{
+  content:"";
+  position:absolute;
+  inset:-1px;
+  border-radius:18px;
+  border:1px solid #ffffff08;
+  pointer-events:none;
 }
 
 body.play-focus .screen canvas,
@@ -143,7 +414,7 @@ body.play-focus .screen canvas,
   height:100%!important;
   max-width:100%;
   max-height:100%;
-  aspect-ratio:3 / 2;
+  aspect-ratio:3/2;
   object-fit:contain;
   image-rendering:pixelated;
   touch-action:none;
@@ -152,68 +423,154 @@ body.play-focus .screen canvas,
 body.play-focus .mobbyboy-brand,
 .console:fullscreen .mobbyboy-brand{
   position:relative;
-  z-index:30;
+  z-index:25;
   order:2;
-  width:min(100%,560px);
+  width:min(100%,640px);
+  height:30px;
+  min-height:30px;
   display:flex;
-  align-items:baseline;
+  align-items:center;
   justify-content:center;
-  gap:7px;
+  gap:9px;
   flex:none;
-  margin:2px 0 0;
+  margin:12px 0 2px;
   line-height:1;
-  pointer-events:none;
+  pointer-events:none!important;
   user-select:none;
-  -webkit-user-select:none;
-  -webkit-touch-callout:none;
-  text-shadow:0 2px 8px #0008;
 }
 
 body.play-focus .mobbyboy-brand span,
 .console:fullscreen .mobbyboy-brand span{
-  font:800 italic clamp(17px,4.8vw,23px)/1 system-ui,sans-serif;
-  letter-spacing:-.055em;
-  background:linear-gradient(90deg,#ffcf66,#ff87bd,#8fdfff,#8ff4c6);
+  font:850 italic clamp(20px,6vw,28px)/1 system-ui,sans-serif;
+  letter-spacing:-.065em;
+  background:linear-gradient(90deg,#f3c56c 0%,#eb8fc4 28%,#7fd7ff 62%,#8df3d0 100%);
   -webkit-background-clip:text;
   background-clip:text;
   color:transparent;
+  filter:drop-shadow(0 3px 8px #0007);
 }
 
 body.play-focus .mobbyboy-brand small,
 .console:fullscreen .mobbyboy-brand small{
-  color:#b8bed6;
-  font:700 7px/1 system-ui,sans-serif;
-  letter-spacing:.16em;
+  color:#d4daf1;
+  font:750 8px/1 system-ui,sans-serif;
+  letter-spacing:.22em;
 }
 
-/* Controls are the top interactive layer and reuse the original wired buttons. */
+body.play-focus .mobbyboy-hinge,
+.console:fullscreen .mobbyboy-hinge{
+  position:relative;
+  z-index:15;
+  order:3;
+  width:min(100%,680px);
+  height:46px;
+  min-height:46px;
+  margin:0 0 8px;
+  flex:none;
+  border-radius:999px;
+  background:linear-gradient(180deg,#735eff 0%,#553fcf 46%,#4133a8 100%);
+  box-shadow:inset 0 2px 3px #ffffff1f,inset 0 -10px 14px #2d236f80,0 8px 16px #00000025;
+  pointer-events:none!important;
+}
+
+body.play-focus .mobbyboy-hinge::before,
+.console:fullscreen .mobbyboy-hinge::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:inherit;
+  background:linear-gradient(90deg,transparent 0 8%,#ffffff12 8% 9%,transparent 9% 46%,#00000035 46% 54%,transparent 54% 91%,#ffffff12 91% 92%,transparent 92% 100%);
+  pointer-events:none;
+}
+
+body.play-focus .mobbyboy-hinge::after,
+.console:fullscreen .mobbyboy-hinge::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-16px;
+  width:64px;
+  height:64px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,#604cdf,#4532b4 66%,#34278c 100%);
+  box-shadow:inset 0 2px 4px #ffffff14,inset 0 -10px 16px #2f237b80,0 8px 14px #00000024;
+  pointer-events:none;
+}
+
+body.play-focus .mobbyboy-hinge span,
+.console:fullscreen .mobbyboy-hinge span{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:2px;
+  border-radius:99px;
+  background:linear-gradient(180deg,#ffffff18,#00000035);
+  opacity:.8;
+}
+body.play-focus .mobbyboy-hinge span:nth-child(1),
+.console:fullscreen .mobbyboy-hinge span:nth-child(1){left:18%}
+body.play-focus .mobbyboy-hinge span:nth-child(2),
+.console:fullscreen .mobbyboy-hinge span:nth-child(2){left:50%;transform:translateX(-50%)}
+body.play-focus .mobbyboy-hinge span:nth-child(3),
+.console:fullscreen .mobbyboy-hinge span:nth-child(3){right:18%}
+
 body.play-focus .touch-controls,
 .console:fullscreen .touch-controls{
+  --dir:clamp(56px,14.6vw,64px);
+  --face:clamp(76px,19.8vw,88px);
   box-sizing:border-box;
   position:relative;
   z-index:100;
-  order:3;
+  order:4;
   display:grid!important;
-  grid-template-rows:auto minmax(0,1fr) auto;
-  row-gap:clamp(8px,1.4dvh,12px);
-  width:min(100%,560px)!important;
-  max-width:560px!important;
-  min-height:0;
-  flex:1 1 auto;
+  grid-template-rows:60px minmax(188px,1fr) 56px;
+  row-gap:10px;
+  width:min(calc(100% - 12px),680px)!important;
+  max-width:680px!important;
+  height:324px;
+  min-height:324px;
+  flex:0 0 324px;
   margin:0 auto!important;
-  padding:4px 4px 2px;
+  padding:16px 14px 26px;
   pointer-events:auto;
   touch-action:none;
   user-select:none;
   -webkit-user-select:none;
   -webkit-touch-callout:none;
+  border-radius:0 0 42px 42px;
+  background:
+    radial-gradient(circle at 26% 62%,#2f23744a 0%,#2f237400 22%),
+    radial-gradient(circle at 77% 58%,#2f23744a 0%,#2f237400 22%),
+    linear-gradient(180deg,#563fd2 0%,#4b39c1 48%,#4738bb 100%);
+  box-shadow:inset 0 1px 0 #ffffff14,inset 0 -20px 30px #281c7380;
 }
 
-body.play-focus .touch-controls *,
-.console:fullscreen .touch-controls *{
-  -webkit-user-select:none;
-  user-select:none;
-  -webkit-touch-callout:none;
+body.play-focus .touch-controls::before,
+.console:fullscreen .touch-controls::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:0 8px 10px;
+  border-radius:0 0 38px 38px;
+  background:linear-gradient(180deg,#ffffff08,transparent 16%,transparent 80%,#00000010 100%);
+  box-shadow:inset 0 0 0 1px #ffffff0e;
+  pointer-events:none;
+}
+
+body.play-focus .touch-controls::after,
+.console:fullscreen .touch-controls::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:70px;
+  width:86px;
+  height:68px;
+  transform:translateX(-50%);
+  background:
+    radial-gradient(circle,#15112b 0 2px,transparent 3px) 0 0/18px 18px;
+  opacity:.62;
+  pointer-events:none;
 }
 
 body.play-focus .touch-controls button,
@@ -223,27 +580,49 @@ body.play-focus .touch-controls button,
   z-index:101;
   pointer-events:auto!important;
   touch-action:none!important;
-  border:1px solid #59617d;
-  background:linear-gradient(#343a54,#20263c);
-  color:#f4f7ff;
-  box-shadow:0 5px 0 #111626,0 8px 16px #0006,inset 0 1px 0 #ffffff22;
-  transition:transform 45ms ease,box-shadow 45ms ease,filter 45ms ease,background 45ms ease;
+  border:1px solid #bfc7d8;
+  background:linear-gradient(180deg,#fefefe 0%,var(--shell-face) 44%,var(--shell-face-shadow) 100%);
+  color:#cfd3dd;
+  box-shadow:
+    0 6px 0 #18113f,
+    0 13px 20px #00000030,
+    inset 0 2px 2px #ffffff,
+    inset 0 -10px 16px #c5cad650;
+  text-shadow:0 1px 0 #ffffffa0;
+  transition:transform 42ms ease,box-shadow 42ms ease,filter 42ms ease,border-color 80ms ease;
+  will-change:transform;
   -webkit-tap-highlight-color:transparent;
+}
+
+body.play-focus .touch-controls button::after,
+.console:fullscreen .touch-controls button::after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:inherit;
+  border:1px solid #ffffff70;
+  opacity:.55;
+  pointer-events:none;
 }
 
 body.play-focus .touch-controls button.pressed,
 body.play-focus .touch-controls button:active,
 .console:fullscreen .touch-controls button.pressed,
 .console:fullscreen .touch-controls button:active{
-  transform:translateY(3px) scale(.96)!important;
-  box-shadow:0 1px 0 #111626,0 3px 8px #0007,inset 0 2px 5px #0008;
-  filter:brightness(1.18);
+  transform:translateY(3px) scale(.955)!important;
+  border-color:#ffffff;
+  box-shadow:
+    0 1px 0 #18113f,
+    0 4px 9px #00000042,
+    0 0 20px #79e4ff22,
+    inset 0 4px 10px #c4cad8;
+  filter:brightness(1.02);
 }
 
 body.play-focus .touch-controls .shoulders,
 .console:fullscreen .touch-controls .shoulders{
   display:flex;
-  align-items:center;
+  align-items:start;
   justify-content:space-between;
   gap:16px;
   margin:0;
@@ -251,19 +630,23 @@ body.play-focus .touch-controls .shoulders,
 
 body.play-focus .touch-controls .shoulders button,
 .console:fullscreen .touch-controls .shoulders button{
-  width:clamp(104px,30vw,136px)!important;
-  min-width:104px!important;
-  height:clamp(50px,6.7dvh,58px)!important;
-  min-height:50px!important;
-  padding:5px 12px!important;
-  border-radius:15px;
-  font-size:14px!important;
+  width:clamp(116px,32vw,152px)!important;
+  min-width:116px!important;
+  height:54px!important;
+  min-height:54px!important;
+  padding:5px 14px!important;
+  border-radius:24px 24px 34px 34px;
+  font-size:16px!important;
+  font-weight:800;
+  letter-spacing:.04em;
 }
 
 body.play-focus .touch-controls .pad-row,
 .console:fullscreen .touch-controls .pad-row{
   display:grid;
-  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-columns:max-content max-content;
+  justify-content:space-between;
+  column-gap:clamp(10px,3vw,22px);
   align-items:center;
   width:100%;
   min-height:0;
@@ -272,86 +655,129 @@ body.play-focus .touch-controls .pad-row,
 
 body.play-focus .touch-controls .dpad,
 .console:fullscreen .touch-controls .dpad{
+  position:relative;
   justify-self:start;
   display:grid;
-  grid-template-columns:repeat(3,clamp(58px,16.5vw,68px))!important;
-  grid-template-rows:repeat(3,clamp(54px,7.4dvh,64px))!important;
+  grid-template-columns:repeat(3,var(--dir))!important;
+  grid-template-rows:repeat(3,var(--dir))!important;
   gap:3px!important;
+  filter:drop-shadow(0 10px 12px #0000001f);
+}
+
+body.play-focus .touch-controls .dpad::before,
+.console:fullscreen .touch-controls .dpad::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:50%;
+  top:50%;
+  width:calc(var(--dir) * 3.45);
+  height:calc(var(--dir) * 3.15);
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:radial-gradient(circle at 40% 30%,#5844d3,#3e2f9d 68%,#342885 100%);
+  box-shadow:inset 0 2px 4px #ffffff10,inset 0 -12px 18px #23195f88;
+  pointer-events:none;
 }
 
 body.play-focus .touch-controls .dpad button,
 .console:fullscreen .touch-controls .dpad button{
-  width:clamp(58px,16.5vw,68px)!important;
-  min-width:58px!important;
-  height:clamp(54px,7.4dvh,64px)!important;
-  min-height:54px!important;
+  width:var(--dir)!important;
+  min-width:var(--dir)!important;
+  height:var(--dir)!important;
+  min-height:var(--dir)!important;
   padding:0!important;
-  border-radius:12px;
-  font-size:18px!important;
+  border-radius:14px;
+  font-size:21px!important;
+  font-weight:900;
+  color:#cfd3dd;
 }
+
+body.play-focus .touch-controls .dpad .up,
+.console:fullscreen .touch-controls .dpad .up{border-radius:18px 18px 10px 10px}
+body.play-focus .touch-controls .dpad .down,
+.console:fullscreen .touch-controls .dpad .down{border-radius:10px 10px 18px 18px}
+body.play-focus .touch-controls .dpad .left,
+.console:fullscreen .touch-controls .dpad .left{border-radius:18px 10px 10px 18px}
+body.play-focus .touch-controls .dpad .right,
+.console:fullscreen .touch-controls .dpad .right{border-radius:10px 18px 18px 10px}
 
 body.play-focus .touch-controls .ab,
 .console:fullscreen .touch-controls .ab{
+  position:relative;
   justify-self:end;
   display:flex;
   align-items:center;
-  gap:clamp(10px,3vw,16px)!important;
-  padding:10px 2px 4px!important;
-  transform:rotate(-8deg);
+  gap:clamp(8px,2.2vw,14px)!important;
+  padding:12px 4px 2px!important;
+}
+
+body.play-focus .touch-controls .ab::before,
+.console:fullscreen .touch-controls .ab::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  right:2px;
+  top:2px;
+  width:calc(var(--face) * 2.25);
+  height:calc(var(--face) * 1.72);
+  border-radius:38px;
+  transform:rotate(-13deg);
+  background:radial-gradient(circle at 35% 30%,#5945d6,#3d2f9c 68%,#332884 100%);
+  box-shadow:inset 0 2px 4px #ffffff10,inset 0 -12px 18px #23195f88;
+  pointer-events:none;
 }
 
 body.play-focus .touch-controls .ab button,
 .console:fullscreen .touch-controls .ab button{
-  width:clamp(72px,20vw,84px)!important;
-  min-width:72px!important;
-  height:clamp(72px,20vw,84px)!important;
-  min-height:72px!important;
+  width:var(--face)!important;
+  min-width:var(--face)!important;
+  height:var(--face)!important;
+  min-height:var(--face)!important;
   padding:0!important;
   border-radius:50%;
-  border-color:#76586d;
-  background:linear-gradient(#bc638d,#7d3d64);
-  font-size:clamp(22px,6vw,27px)!important;
-  font-weight:850;
+  font-size:clamp(24px,6.5vw,32px)!important;
+  font-weight:900;
 }
 
 body.play-focus .touch-controls .ab button:last-child,
 .console:fullscreen .touch-controls .ab button:last-child{
-  transform:translateY(-12px);
+  transform:translateY(-18px);
 }
 
 body.play-focus .touch-controls .ab button:last-child.pressed,
 body.play-focus .touch-controls .ab button:last-child:active,
 .console:fullscreen .touch-controls .ab button:last-child.pressed,
 .console:fullscreen .touch-controls .ab button:last-child:active{
-  transform:translateY(-9px) scale(.96)!important;
+  transform:translateY(-15px) scale(.955)!important;
 }
 
 body.play-focus .touch-controls .system-buttons,
 .console:fullscreen .touch-controls .system-buttons{
   display:flex;
-  align-items:center;
+  align-items:end;
   justify-content:center;
-  gap:clamp(14px,4vw,22px)!important;
+  gap:clamp(16px,4vw,26px)!important;
   margin:0;
-  padding-bottom:2px;
+  padding:0;
 }
 
 body.play-focus .touch-controls .system-buttons button,
 .console:fullscreen .touch-controls .system-buttons button{
-  width:clamp(112px,31vw,142px)!important;
-  min-width:112px!important;
-  height:clamp(48px,6.1dvh,56px)!important;
-  min-height:48px!important;
-  padding:5px 16px!important;
+  width:clamp(116px,32vw,144px)!important;
+  min-width:116px!important;
+  height:52px!important;
+  min-height:52px!important;
+  padding:6px 16px!important;
   border-radius:999px;
   font-size:11px!important;
-  letter-spacing:.12em;
+  font-weight:800;
+  letter-spacing:.15em;
+  color:#4c4672;
 }
 
 body.play-focus .quick-controls,
-.console:fullscreen .quick-controls{
-  display:contents!important;
-}
+.console:fullscreen .quick-controls{display:contents!important}
 
 body.play-focus #pauseBtn,
 body.play-focus #fullBtn,
@@ -359,23 +785,33 @@ body.play-focus #fullBtn,
 .console:fullscreen #fullBtn{
   position:absolute;
   z-index:200;
-  top:max(9px,env(safe-area-inset-top));
-  min-height:44px;
-  max-width:44%;
+  top:max(10px,env(safe-area-inset-top));
+  min-height:40px;
+  height:40px;
+  max-width:42%;
   margin:0;
-  border-color:#59617d;
-  background:#171d2be8;
-  backdrop-filter:blur(10px);
-  -webkit-backdrop-filter:blur(10px);
-  box-shadow:0 5px 16px #0007;
+  border:1px solid #7b72d9;
+  border-radius:16px;
+  background:linear-gradient(180deg,#1a1f32f0,#101523f0);
+  color:#f3f7ff;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  box-shadow:0 6px 18px #0006,inset 0 1px 0 #ffffff18;
   touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform 80ms ease,background 120ms ease,border-color 120ms ease;
 }
+
+body.play-focus #pauseBtn:active,
+body.play-focus #fullBtn:active,
+.console:fullscreen #pauseBtn:active,
+.console:fullscreen #fullBtn:active{transform:scale(.96);border-color:#9ee9d6}
 
 body.play-focus #pauseBtn,
 .console:fullscreen #pauseBtn{
   left:max(10px,env(safe-area-inset-left));
-  width:68px;
-  padding:7px;
+  width:84px;
+  padding:6px;
   font-size:11px;
 }
 
@@ -383,82 +819,78 @@ body.play-focus #fullBtn,
 .console:fullscreen #fullBtn{
   right:max(10px,env(safe-area-inset-right));
   width:auto;
-  padding:7px 12px;
+  padding:6px 13px;
   font-size:11px;
 }
 
 @media (max-width:440px) and (orientation:portrait){
   body.play-focus .console,
   .console:fullscreen{
-    gap:5px;
     padding-left:max(10px,env(safe-area-inset-left));
     padding-right:max(10px,env(safe-area-inset-right));
-    padding-bottom:max(22px,env(safe-area-inset-bottom));
+    padding-bottom:max(14px,env(safe-area-inset-bottom));
   }
 
   body.play-focus .screen,
   .console:fullscreen .screen{
-    width:min(100%,calc((var(--player-height,100dvh) - 400px) * 1.5))!important;
-    max-height:calc(var(--player-height,100dvh) - 400px)!important;
-  }
-
-  body.play-focus .mobbyboy-brand,
-  .console:fullscreen .mobbyboy-brand{
-    margin-top:3px;
-    margin-bottom:1px;
+    width:min(100%,calc((var(--player-height,100dvh) - 438px) * 1.5))!important;
+    max-height:calc(var(--player-height,100dvh) - 438px)!important;
   }
 }
 
-@media (max-width:440px) and (orientation:portrait) and (max-height:780px){
+@media (max-width:440px) and (orientation:portrait) and (max-height:790px){
   body.play-focus .console,
   .console:fullscreen{
-    padding-top:max(8px,env(safe-area-inset-top));
-    padding-bottom:max(16px,env(safe-area-inset-bottom));
-    gap:4px;
+    padding-top:max(7px,env(safe-area-inset-top));
+    padding-bottom:max(10px,env(safe-area-inset-bottom));
   }
 
   body.play-focus .console-top,
-  .console:fullscreen .console-top{min-height:18px}
+  .console:fullscreen .console-top{height:40px;min-height:40px}
 
   body.play-focus .screen,
   .console:fullscreen .screen{
-    width:min(100%,calc((var(--player-height,100dvh) - 360px) * 1.5))!important;
-    max-height:calc(var(--player-height,100dvh) - 360px)!important;
+    width:min(100%,calc((var(--player-height,100dvh) - 396px) * 1.5))!important;
+    max-height:calc(var(--player-height,100dvh) - 396px)!important;
+    margin-top:0;
   }
 
+  body.play-focus .mobbyboy-brand,
+  .console:fullscreen .mobbyboy-brand{height:27px;min-height:27px;margin-top:10px}
+
+  body.play-focus .mobbyboy-hinge,
+  .console:fullscreen .mobbyboy-hinge{height:38px;min-height:38px;margin-bottom:6px}
+
+  body.play-focus .mobbyboy-hinge::after,
+  .console:fullscreen .mobbyboy-hinge::after{width:54px;height:54px;top:-12px}
+
   body.play-focus .touch-controls,
-  .console:fullscreen .touch-controls{row-gap:6px}
+  .console:fullscreen .touch-controls{
+    --dir:50px;
+    --face:70px;
+    grid-template-rows:50px minmax(160px,1fr) 48px;
+    row-gap:8px;
+    height:280px;
+    min-height:280px;
+    flex-basis:280px;
+    padding:12px 14px 20px;
+  }
+
+  body.play-focus .touch-controls::after,
+  .console:fullscreen .touch-controls::after{bottom:63px;width:74px;height:56px;background-size:16px 16px}
 
   body.play-focus .touch-controls .shoulders button,
   .console:fullscreen .touch-controls .shoulders button{
+    width:110px!important;
+    min-width:110px!important;
     height:48px!important;
     min-height:48px!important;
   }
 
-  body.play-focus .touch-controls .dpad,
-  .console:fullscreen .touch-controls .dpad{
-    grid-template-columns:repeat(3,56px)!important;
-    grid-template-rows:repeat(3,50px)!important;
-  }
-
-  body.play-focus .touch-controls .dpad button,
-  .console:fullscreen .touch-controls .dpad button{
-    width:56px!important;
-    min-width:56px!important;
-    height:50px!important;
-    min-height:50px!important;
-  }
-
-  body.play-focus .touch-controls .ab button,
-  .console:fullscreen .touch-controls .ab button{
-    width:70px!important;
-    min-width:70px!important;
-    height:70px!important;
-    min-height:70px!important;
-  }
-
   body.play-focus .touch-controls .system-buttons button,
   .console:fullscreen .touch-controls .system-buttons button{
+    width:108px!important;
+    min-width:108px!important;
     height:46px!important;
     min-height:46px!important;
   }
@@ -468,36 +900,41 @@ body.play-focus #fullBtn,
   body.play-focus .console,
   .console:fullscreen{
     display:grid!important;
-    grid-template-columns:minmax(0,1fr) minmax(286px,35vw);
-    grid-template-rows:24px minmax(0,1fr);
-    column-gap:14px;
-    row-gap:2px;
+    grid-template-columns:minmax(0,1fr) minmax(310px,36vw);
+    grid-template-rows:40px auto 20px minmax(0,1fr);
+    column-gap:16px;
+    row-gap:3px;
     align-items:center;
     padding:
-      max(7px,env(safe-area-inset-top))
+      max(6px,env(safe-area-inset-top))
       max(12px,env(safe-area-inset-right))
-      max(10px,env(safe-area-inset-bottom))
+      max(8px,env(safe-area-inset-bottom))
       max(12px,env(safe-area-inset-left));
   }
+
+  body.play-focus .console::after,
+  .console:fullscreen .console::after{top:10px;width:34px;height:34px}
 
   body.play-focus .console-top,
   .console:fullscreen .console-top{
     grid-column:1;
     grid-row:1;
     width:100%;
-    padding:0 4px;
-    align-self:end;
+    height:40px;
+    min-height:40px;
+    align-self:center;
   }
 
   body.play-focus .screen,
   .console:fullscreen .screen{
     grid-column:1;
     grid-row:2;
-    width:min(100%,calc((var(--player-height,100dvh) - 48px) * 1.5))!important;
+    width:min(100%,calc((var(--player-height,100dvh) - 88px) * 1.5))!important;
     max-width:100%!important;
-    max-height:calc(var(--player-height,100dvh) - 48px)!important;
+    max-height:calc(var(--player-height,100dvh) - 88px)!important;
     align-self:center;
     justify-self:center;
+    margin-top:0;
   }
 
   body.play-focus .mobbyboy-brand,
@@ -505,79 +942,67 @@ body.play-focus #fullBtn,
     grid-column:2;
     grid-row:1;
     width:100%;
+    height:32px;
+    min-height:32px;
     margin:0;
     justify-self:center;
     align-self:center;
   }
 
-  body.play-focus .mobbyboy-brand span,
-  .console:fullscreen .mobbyboy-brand span{font-size:18px}
+  body.play-focus .mobbyboy-hinge,
+  .console:fullscreen .mobbyboy-hinge{
+    grid-column:1;
+    grid-row:3;
+    width:min(100%,calc((var(--player-height,100dvh) - 88px) * 1.5));
+    max-width:100%;
+    height:18px;
+    min-height:18px;
+    margin:0;
+    justify-self:center;
+  }
+
+  body.play-focus .mobbyboy-hinge::after,
+  .console:fullscreen .mobbyboy-hinge::after{display:none}
 
   body.play-focus .touch-controls,
   .console:fullscreen .touch-controls{
+    --dir:44px;
+    --face:58px;
     grid-column:2;
-    grid-row:2;
+    grid-row:2 / span 3;
+    grid-template-rows:46px minmax(146px,1fr) 44px;
     width:100%!important;
     max-width:none!important;
     height:100%;
     min-height:0;
+    flex:none;
     align-self:stretch;
-    padding:2px 3px 4px;
-    row-gap:4px;
+    padding:12px 10px 14px;
+    row-gap:5px;
+    border-radius:30px;
   }
 
-  body.play-focus .touch-controls .shoulders,
-  .console:fullscreen .touch-controls .shoulders{gap:10px}
+  body.play-focus .touch-controls::after,
+  .console:fullscreen .touch-controls::after{bottom:56px;width:68px;height:54px}
 
   body.play-focus .touch-controls .shoulders button,
   .console:fullscreen .touch-controls .shoulders button{
-    width:92px!important;
-    min-width:92px!important;
+    width:102px!important;
+    min-width:102px!important;
     height:44px!important;
     min-height:44px!important;
   }
 
-  body.play-focus .touch-controls .pad-row,
-  .console:fullscreen .touch-controls .pad-row{align-self:center}
-
-  body.play-focus .touch-controls .dpad,
-  .console:fullscreen .touch-controls .dpad{
-    grid-template-columns:repeat(3,46px)!important;
-    grid-template-rows:repeat(3,46px)!important;
-    gap:2px!important;
-  }
-
-  body.play-focus .touch-controls .dpad button,
-  .console:fullscreen .touch-controls .dpad button{
-    width:46px!important;
-    min-width:46px!important;
-    height:46px!important;
-    min-height:46px!important;
-    font-size:14px!important;
-  }
-
   body.play-focus .touch-controls .ab,
-  .console:fullscreen .touch-controls .ab{
-    gap:8px!important;
-    padding:4px 0!important;
-  }
-
-  body.play-focus .touch-controls .ab button,
-  .console:fullscreen .touch-controls .ab button{
-    width:58px!important;
-    min-width:58px!important;
-    height:58px!important;
-    min-height:58px!important;
-    font-size:19px!important;
-  }
+  .console:fullscreen .touch-controls .ab{gap:9px!important;padding:6px 0!important}
 
   body.play-focus .touch-controls .system-buttons,
-  .console:fullscreen .touch-controls .system-buttons{gap:9px!important}
+  .console:fullscreen .touch-controls .system-buttons{gap:10px!important}
 
   body.play-focus .touch-controls .system-buttons button,
   .console:fullscreen .touch-controls .system-buttons button{
-    width:96px!important;
-    min-width:96px!important;
+    width:100px!important;
+    min-width:100px!important;
     height:44px!important;
     min-height:44px!important;
     padding:4px 11px!important;
@@ -587,12 +1012,17 @@ body.play-focus #fullBtn,
   body.play-focus #fullBtn,
   .console:fullscreen #pauseBtn,
   .console:fullscreen #fullBtn{
-    top:max(6px,env(safe-area-inset-top));
-    min-height:40px;
+    top:max(7px,env(safe-area-inset-top));
+    height:38px;
+    min-height:38px;
   }
 }
 
 @media (prefers-reduced-motion:reduce){
+  body.focus-entering .console,
+  body.focus-entering .console:fullscreen{animation:none}
   body.play-focus .touch-controls button,
-  .console:fullscreen .touch-controls button{transition:none}
+  .console:fullscreen .touch-controls button,
+  body.play-focus #pauseBtn,
+  body.play-focus #fullBtn{transition:none}
 }
