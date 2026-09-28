@@ -896,125 +896,328 @@ body.play-focus #fullBtn,
   }
 }
 
-@media (orientation:landscape) and (max-height:600px){
+@media (orientation:landscape) and (max-height:600px) and (hover:none) and (pointer:coarse){
   body.play-focus .console,
   .console:fullscreen{
     display:grid!important;
-    grid-template-columns:minmax(0,1fr) minmax(310px,36vw);
-    grid-template-rows:40px auto 20px minmax(0,1fr);
-    column-gap:16px;
-    row-gap:3px;
-    align-items:center;
+    grid-template-columns:minmax(0,1fr);
+    grid-template-rows:40px auto 24px auto;
+    row-gap:6px;
+    align-items:start;
+    justify-items:center;
     padding:
-      max(6px,env(safe-area-inset-top))
-      max(12px,env(safe-area-inset-right))
-      max(8px,env(safe-area-inset-bottom))
-      max(12px,env(safe-area-inset-left));
+      max(8px,env(safe-area-inset-top))
+      max(14px,env(safe-area-inset-right))
+      max(10px,env(safe-area-inset-bottom))
+      max(14px,env(safe-area-inset-left));
+    background:
+      radial-gradient(circle at 50% 7%, #7d67ff 0%, rgba(125,103,255,.28) 6%, transparent 7%),
+      radial-gradient(circle at 12% 55%, rgba(127,112,255,.22) 0%, transparent 34%),
+      radial-gradient(circle at 88% 55%, rgba(127,112,255,.22) 0%, transparent 34%),
+      linear-gradient(180deg,#6a53ef 0%,#593fdf 32%,#4b31c1 70%,#462eb8 100%);
+    border-radius:38px;
+    overflow:hidden;
+  }
+
+  body.play-focus .console::before,
+  .console:fullscreen::before{
+    content:"";
+    position:absolute;
+    inset:4px;
+    border-radius:34px;
+    border:1px solid rgba(31,16,90,.72);
+    background:
+      radial-gradient(circle at 44px 34px,#6d54f0 0 18px,#2d1d78 19px 21px,transparent 22px),
+      radial-gradient(circle at calc(100% - 44px) 34px,#6d54f0 0 18px,#2d1d78 19px 21px,transparent 22px),
+      linear-gradient(180deg,rgba(255,255,255,.08),transparent 14%,transparent 86%,rgba(0,0,0,.08));
+    box-shadow:inset 0 0 0 1px rgba(139,125,255,.28);
+    pointer-events:none;
+    z-index:0;
   }
 
   body.play-focus .console::after,
-  .console:fullscreen .console::after{top:10px;width:34px;height:34px}
+  .console:fullscreen::after{
+    top:14px;
+    width:26px;
+    height:26px;
+    background:radial-gradient(circle at 35% 35%,#6f58f1,#4a31c0 72%,#37258f 100%);
+    box-shadow:inset 0 2px 3px rgba(255,255,255,.16), inset 0 -6px 10px rgba(33,19,100,.72);
+    opacity:.92;
+  }
 
   body.play-focus .console-top,
   .console:fullscreen .console-top{
     grid-column:1;
     grid-row:1;
-    width:100%;
+    width:min(100%,880px);
     height:40px;
     min-height:40px;
+    min-width:0;
     align-self:center;
+    justify-self:center;
+    z-index:3;
   }
 
   body.play-focus .screen,
   .console:fullscreen .screen{
     grid-column:1;
     grid-row:2;
-    width:min(100%,calc((var(--player-height,100dvh) - 88px) * 1.5))!important;
-    max-width:100%!important;
-    max-height:calc(var(--player-height,100dvh) - 88px)!important;
-    align-self:center;
-    justify-self:center;
-    margin-top:0;
+    width:min(100%, calc((var(--player-height,100dvh) - 206px) * 1.5), 560px)!important;
+    max-width:min(100%, 560px)!important;
+    max-height:calc(var(--player-height,100dvh) - 206px)!important;
+    margin:0;
+    border-radius:26px;
+    border:1px solid #05060c;
+    box-shadow:
+      0 0 0 8px #06070a,
+      0 0 0 10px #17102d,
+      0 10px 18px rgba(0,0,0,.38),
+      inset 0 0 24px rgba(0,0,0,.96);
+    z-index:2;
   }
 
   body.play-focus .mobbyboy-brand,
   .console:fullscreen .mobbyboy-brand{
-    grid-column:2;
-    grid-row:1;
-    width:100%;
-    height:32px;
-    min-height:32px;
+    grid-column:1;
+    grid-row:3;
+    width:min(100%,760px);
+    height:24px;
+    min-height:24px;
     margin:0;
-    justify-self:center;
-    align-self:center;
+    justify-content:center;
+    gap:10px;
+    z-index:2;
+  }
+
+  body.play-focus .mobbyboy-brand span,
+  .console:fullscreen .mobbyboy-brand span{
+    font:900 18px/1 system-ui,sans-serif;
+    letter-spacing:.02em;
+    text-transform:none;
+    background:linear-gradient(90deg,#ffbe95 0%,#ffd29d 18%,#a9ffd2 66%,#e8f3ff 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 1px 0 rgba(0,0,0,.26));
+  }
+
+  body.play-focus .mobbyboy-brand small,
+  .console:fullscreen .mobbyboy-brand small{
+    display:inline-flex;
+    align-items:center;
+    font:700 10px/1 system-ui,sans-serif;
+    letter-spacing:.24em;
+    color:#edeaff;
+    opacity:.9;
+    text-transform:uppercase;
   }
 
   body.play-focus .mobbyboy-hinge,
   .console:fullscreen .mobbyboy-hinge{
-    grid-column:1;
-    grid-row:3;
-    width:min(100%,calc((var(--player-height,100dvh) - 88px) * 1.5));
-    max-width:100%;
-    height:18px;
-    min-height:18px;
-    margin:0;
-    justify-self:center;
+    display:none!important;
   }
-
-  body.play-focus .mobbyboy-hinge::after,
-  .console:fullscreen .mobbyboy-hinge::after{display:none}
 
   body.play-focus .touch-controls,
   .console:fullscreen .touch-controls{
-    --dir:44px;
-    --face:58px;
-    grid-column:2;
-    grid-row:2 / span 3;
-    grid-template-rows:46px minmax(146px,1fr) 44px;
-    width:100%!important;
-    max-width:none!important;
-    height:100%;
+    --dir:56px;
+    --face:76px;
+    grid-column:1;
+    grid-row:4;
+    width:min(100%, 860px)!important;
+    max-width:860px!important;
+    height:auto;
     min-height:0;
     flex:none;
-    align-self:stretch;
-    padding:12px 10px 14px;
-    row-gap:5px;
-    border-radius:30px;
+    grid-template-rows:48px minmax(120px,1fr) 42px;
+    row-gap:6px;
+    padding:6px 20px 10px;
+    border-radius:26px;
+    background:linear-gradient(180deg,#6149e8 0%,#4d35ca 52%,#482fbe 100%);
+    box-shadow:inset 0 1px 0 rgba(141,125,255,.28), inset 0 -14px 24px rgba(43,27,125,.42);
+    z-index:2;
+  }
+
+  body.play-focus .touch-controls::before,
+  .console:fullscreen .touch-controls::before{
+    content:"";
+    position:absolute;
+    right:70px;
+    bottom:38px;
+    width:58px;
+    height:44px;
+    border-radius:14px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.1), rgba(255,255,255,0) 24%),
+      radial-gradient(circle,#201646 0 2px,transparent 3px) 0 0/14px 14px;
+    opacity:.7;
+    pointer-events:none;
+    z-index:0;
   }
 
   body.play-focus .touch-controls::after,
-  .console:fullscreen .touch-controls::after{bottom:56px;width:68px;height:54px}
+  .console:fullscreen .touch-controls::after{
+    display:none;
+  }
+
+  body.play-focus .touch-controls .shoulders,
+  .console:fullscreen .touch-controls .shoulders{
+    padding:0 18px;
+    align-items:center;
+  }
 
   body.play-focus .touch-controls .shoulders button,
   .console:fullscreen .touch-controls .shoulders button{
-    width:102px!important;
-    min-width:102px!important;
-    height:44px!important;
-    min-height:44px!important;
+    width:128px!important;
+    min-width:128px!important;
+    height:42px!important;
+    min-height:42px!important;
+    border-radius:30px 58px 24px 24px;
+    color:#d9dbe3;
+    font-size:22px!important;
+    font-weight:800;
+    letter-spacing:.02em;
   }
 
+  body.play-focus .touch-controls .shoulders button:last-child,
+  .console:fullscreen .touch-controls .shoulders button:last-child{
+    border-radius:58px 30px 24px 24px;
+  }
+
+  body.play-focus .touch-controls .pad-row,
+  .console:fullscreen .touch-controls .pad-row{
+    grid-template-columns:1fr 1fr;
+    align-items:center;
+    padding:0 20px;
+    column-gap:24px;
+  }
+
+  body.play-focus .touch-controls .dpad,
+  .console:fullscreen .touch-controls .dpad{
+    justify-self:start;
+    gap:0!important;
+  }
+
+  body.play-focus .touch-controls .dpad::before,
+  .console:fullscreen .touch-controls .dpad::before{
+    width:172px;
+    height:172px;
+    border-radius:50%;
+    background:radial-gradient(circle at 40% 30%,#573fdf,#402fa6 72%,#352884 100%);
+    box-shadow:inset 0 3px 6px rgba(132,111,255,.2), inset 0 -14px 18px rgba(36,24,95,.52);
+  }
+
+  body.play-focus .touch-controls .dpad button,
+  .console:fullscreen .touch-controls .dpad button{
+    width:56px!important;
+    min-width:56px!important;
+    height:56px!important;
+    min-height:56px!important;
+    border-radius:0;
+    font-size:24px!important;
+    box-shadow:0 4px 0 #18113f, 0 8px 14px rgba(0,0,0,.22), inset 0 2px 2px rgba(255,255,255,.95), inset 0 -9px 14px rgba(197,202,214,.28);
+  }
+
+  body.play-focus .touch-controls .dpad .up,
+  .console:fullscreen .touch-controls .dpad .up{border-radius:16px 16px 8px 8px}
+  body.play-focus .touch-controls .dpad .down,
+  .console:fullscreen .touch-controls .dpad .down{border-radius:8px 8px 16px 16px}
+  body.play-focus .touch-controls .dpad .left,
+  .console:fullscreen .touch-controls .dpad .left{border-radius:16px 8px 8px 16px}
+  body.play-focus .touch-controls .dpad .right,
+  .console:fullscreen .touch-controls .dpad .right{border-radius:8px 16px 16px 8px}
+
   body.play-focus .touch-controls .ab,
-  .console:fullscreen .touch-controls .ab{gap:9px!important;padding:6px 0!important}
+  .console:fullscreen .touch-controls .ab{
+    justify-self:end;
+    gap:12px!important;
+    padding:0 2px!important;
+  }
+
+  body.play-focus .touch-controls .ab::before,
+  .console:fullscreen .touch-controls .ab::before{
+    right:-10px;
+    top:4px;
+    width:198px;
+    height:116px;
+    border-radius:38px;
+    transform:rotate(-16deg);
+    background:radial-gradient(circle at 35% 30%,#573fdf,#402fa6 72%,#352884 100%);
+    box-shadow:inset 0 3px 6px rgba(132,111,255,.2), inset 0 -14px 18px rgba(36,24,95,.52);
+  }
+
+  body.play-focus .touch-controls .ab button,
+  .console:fullscreen .touch-controls .ab button{
+    width:76px!important;
+    min-width:76px!important;
+    height:76px!important;
+    min-height:76px!important;
+    font-size:30px!important;
+    color:#d6d8df;
+  }
+
+  body.play-focus .touch-controls .ab button:first-child,
+  .console:fullscreen .touch-controls .ab button:first-child{transform:translateY(8px)}
+
+  body.play-focus .touch-controls .ab button:last-child,
+  .console:fullscreen .touch-controls .ab button:last-child{transform:translateY(-8px)}
+
+  body.play-focus .touch-controls .ab button:first-child.pressed,
+  body.play-focus .touch-controls .ab button:first-child:active,
+  .console:fullscreen .touch-controls .ab button:first-child.pressed,
+  .console:fullscreen .touch-controls .ab button:first-child:active{transform:translateY(10px) scale(.955)!important}
+
+  body.play-focus .touch-controls .ab button:last-child.pressed,
+  body.play-focus .touch-controls .ab button:last-child:active,
+  .console:fullscreen .touch-controls .ab button:last-child.pressed,
+  .console:fullscreen .touch-controls .ab button:last-child:active{transform:translateY(-6px) scale(.955)!important}
 
   body.play-focus .touch-controls .system-buttons,
-  .console:fullscreen .touch-controls .system-buttons{gap:10px!important}
+  .console:fullscreen .touch-controls .system-buttons{
+    gap:28px!important;
+    align-items:center;
+    justify-content:center;
+    padding-bottom:0;
+  }
 
   body.play-focus .touch-controls .system-buttons button,
   .console:fullscreen .touch-controls .system-buttons button{
-    width:100px!important;
-    min-width:100px!important;
-    height:44px!important;
-    min-height:44px!important;
-    padding:4px 11px!important;
+    width:118px!important;
+    min-width:118px!important;
+    height:36px!important;
+    min-height:36px!important;
+    padding:0 12px!important;
+    border-radius:999px;
+    font-size:15px!important;
+    letter-spacing:.18em;
+    font-weight:800;
+    color:#3f356d;
+    background:linear-gradient(180deg,#ffffff 0%,#eff2f6 100%);
+    box-shadow:0 4px 0 #18113f, 0 10px 14px rgba(0,0,0,.18), inset 0 1px 1px rgba(255,255,255,.98), inset 0 -8px 12px rgba(206,212,223,.42);
+  }
+
+  body.play-focus .touch-controls .system-buttons button::before,
+  .console:fullscreen .touch-controls .system-buttons button::before,
+  body.play-focus .touch-controls .system-buttons button::after,
+  .console:fullscreen .touch-controls .system-buttons button::after{
+    display:none;
   }
 
   body.play-focus #pauseBtn,
   body.play-focus #fullBtn,
   .console:fullscreen #pauseBtn,
   .console:fullscreen #fullBtn{
-    top:max(7px,env(safe-area-inset-top));
+    top:max(8px,env(safe-area-inset-top));
     height:38px;
     min-height:38px;
+    padding:0 16px;
+    border-radius:18px;
+  }
+
+  body.play-focus #editSave,
+  body.play-focus #saveNow,
+  .console:fullscreen #editSave,
+  .console:fullscreen #saveNow{
+    display:none!important;
   }
 }
 
@@ -1424,515 +1627,4 @@ body.play-focus #fullBtn,
   .console:fullscreen .touch-controls .system-buttons button:first-child::after{content:"SELECT"}
   body.play-focus .touch-controls .system-buttons button:last-child::after,
   .console:fullscreen .touch-controls .system-buttons button:last-child::after{content:"START"}
-}
-
-/* ---------- Desktop play-focus: game center + type chart left + journey right ---------- */
-@media (min-width:921px){
-  html.player-fullscreen,
-  body.play-focus{
-    background:#080d14;
-  }
-
-  body.play-focus .play-main{
-    width:100%;
-    max-width:none;
-    height:var(--player-height,100dvh);
-    padding:0;
-    overflow:hidden;
-  }
-
-  body.play-focus .play-layout,
-  body.play-focus .play-layout:fullscreen{
-    position:fixed;
-    z-index:10;
-    inset:0;
-    box-sizing:border-box;
-    width:var(--player-width,100vw)!important;
-    height:var(--player-height,100dvh)!important;
-    max-width:none!important;
-    margin:0!important;
-    padding:14px!important;
-    display:grid!important;
-    grid-template-columns:minmax(210px,.9fr) minmax(0,2.15fr) minmax(220px,.95fr)!important;
-    grid-template-rows:minmax(0,1fr)!important;
-    gap:14px!important;
-    align-items:stretch;
-    overflow:hidden!important;
-    background:
-      radial-gradient(circle at 50% -20%,#173249 0,transparent 42%),
-      linear-gradient(180deg,#090f18 0%,#070b11 100%)!important;
-  }
-
-  body.play-focus .play-layout>aside,
-  body.play-focus .play-layout:fullscreen>aside{
-    display:flex!important;
-    min-width:0;
-    min-height:0;
-    max-height:100%;
-    margin:0!important;
-    overflow:auto;
-    overscroll-behavior:contain;
-    scrollbar-width:thin;
-  }
-
-  body.play-focus .battle-reference,
-  body.play-focus .play-layout:fullscreen .battle-reference{
-    grid-column:1!important;
-    grid-row:1!important;
-  }
-
-  body.play-focus .journey-side,
-  body.play-focus .play-layout:fullscreen .journey-side{
-    grid-column:3!important;
-    grid-row:1!important;
-  }
-
-  body.play-focus .battle-reference .play-card,
-  body.play-focus .journey-side .play-card,
-  body.play-focus .play-layout:fullscreen .battle-reference .play-card,
-  body.play-focus .play-layout:fullscreen .journey-side .play-card{
-    width:100%;
-    box-sizing:border-box;
-    margin:0 0 12px;
-  }
-
-  body.play-focus .console,
-  body.play-focus .play-layout:fullscreen .console{
-    grid-column:2!important;
-    grid-row:1!important;
-    position:relative!important;
-    inset:auto!important;
-    box-sizing:border-box;
-    width:100%!important;
-    max-width:none!important;
-    height:100%!important;
-    min-height:0!important;
-    margin:0!important;
-    padding:12px!important;
-    display:flex!important;
-    flex-direction:column!important;
-    align-items:center!important;
-    justify-content:flex-start!important;
-    gap:10px!important;
-    overflow:auto!important;
-    touch-action:auto!important;
-    border:1px solid #40546b!important;
-    border-radius:22px!important;
-    background:linear-gradient(155deg,#202b3d 0%,#141d2a 52%,#0f1722 100%)!important;
-    box-shadow:0 20px 50px #0008,inset 0 1px 0 #ffffff10!important;
-  }
-
-  body.play-focus .console::before,
-  body.play-focus .console::after,
-  body.play-focus .play-layout:fullscreen .console::before,
-  body.play-focus .play-layout:fullscreen .console::after{
-    display:none!important;
-  }
-
-  body.play-focus .console-top,
-  body.play-focus .play-layout:fullscreen .console-top{
-    position:static!important;
-    order:0!important;
-    width:100%!important;
-    max-width:1100px!important;
-    height:auto!important;
-    min-height:30px!important;
-    padding:0 4px!important;
-    display:flex!important;
-    align-items:center!important;
-    justify-content:space-between!important;
-    color:#aebbd0!important;
-    font-size:11px!important;
-    letter-spacing:.06em!important;
-    pointer-events:none!important;
-  }
-
-  body.play-focus .console-top b,
-  body.play-focus .play-layout:fullscreen .console-top b{
-    display:block!important;
-    color:#eef4ff;
-  }
-
-  body.play-focus .screen,
-  body.play-focus .play-layout:fullscreen .screen{
-    position:relative!important;
-    order:1!important;
-    flex:0 0 auto!important;
-    width:min(100%,calc((var(--player-height,100dvh) - 215px) * 1.5))!important;
-    max-width:1100px!important;
-    height:auto!important;
-    max-height:calc(var(--player-height,100dvh) - 215px)!important;
-    min-width:0!important;
-    aspect-ratio:3/2!important;
-    margin:0 auto!important;
-    border-radius:14px!important;
-    border:1px solid #60728a!important;
-    background:#020408!important;
-    overflow:hidden!important;
-    box-shadow:0 0 0 5px #070c13,0 0 0 7px #2e3b4d,0 18px 36px #0009,inset 0 0 24px #000!important;
-  }
-
-  body.play-focus .screen canvas,
-  body.play-focus .play-layout:fullscreen .screen canvas{
-    width:100%!important;
-    height:100%!important;
-    aspect-ratio:3/2!important;
-    object-fit:contain!important;
-  }
-
-  body.play-focus .mobbyboy-brand,
-  body.play-focus .mobbyboy-hinge,
-  body.play-focus .touch-controls,
-  body.play-focus .play-layout:fullscreen .mobbyboy-brand,
-  body.play-focus .play-layout:fullscreen .mobbyboy-hinge,
-  body.play-focus .play-layout:fullscreen .touch-controls{
-    display:none!important;
-  }
-
-  body.play-focus .primary-controls,
-  body.play-focus .play-layout:fullscreen .primary-controls{
-    position:static!important;
-    order:2!important;
-    width:min(100%,1100px)!important;
-    display:grid!important;
-    grid-template-columns:repeat(4,minmax(0,1fr))!important;
-    gap:8px!important;
-    margin:0!important;
-    padding:0!important;
-  }
-
-  body.play-focus .quick-controls,
-  body.play-focus .play-layout:fullscreen .quick-controls{
-    position:static!important;
-    order:3!important;
-    width:min(100%,1100px)!important;
-    display:grid!important;
-    grid-template-columns:repeat(3,minmax(0,1fr))!important;
-    gap:8px!important;
-    margin:0!important;
-    padding:0!important;
-  }
-
-  body.play-focus .primary-controls button,
-  body.play-focus .primary-controls label,
-  body.play-focus .quick-controls button,
-  body.play-focus .play-layout:fullscreen .primary-controls button,
-  body.play-focus .play-layout:fullscreen .primary-controls label,
-  body.play-focus .play-layout:fullscreen .quick-controls button{
-    position:static!important;
-    inset:auto!important;
-    box-sizing:border-box!important;
-    width:100%!important;
-    max-width:none!important;
-    min-height:44px!important;
-    height:auto!important;
-    margin:0!important;
-    padding:8px 10px!important;
-    border:1px solid #3e566c!important;
-    border-radius:11px!important;
-    background:linear-gradient(180deg,#1e3346,#142536)!important;
-    color:#eaf2ff!important;
-    font-size:12px!important;
-    box-shadow:inset 0 1px 0 #ffffff0d!important;
-    backdrop-filter:none!important;
-    -webkit-backdrop-filter:none!important;
-  }
-
-  body.play-focus .primary-controls label,
-  body.play-focus .play-layout:fullscreen .primary-controls label{
-    display:flex!important;
-    align-items:center!important;
-    justify-content:center!important;
-    gap:8px!important;
-  }
-
-  body.play-focus #fullBtn,
-  body.play-focus #pauseBtn,
-  body.play-focus .play-layout:fullscreen #fullBtn,
-  body.play-focus .play-layout:fullscreen #pauseBtn{
-    position:static!important;
-    inset:auto!important;
-    width:100%!important;
-    max-width:none!important;
-  }
-
-  body.play-focus #playSettings:not([hidden]),
-  body.play-focus .play-layout:fullscreen #playSettings:not([hidden]){
-    order:4!important;
-    display:block!important;
-    width:min(100%,1100px)!important;
-    box-sizing:border-box!important;
-    margin:0!important;
-  }
-
-  body.play-focus .type-popup{
-    z-index:500;
-  }
-}
-
-@media (min-width:921px){
-  /* Desktop focus keeps the right rail dedicated to Journey / mission guidance. */
-  body.play-focus .journey-side>.play-card:not(:last-child),
-  body.play-focus .play-layout:fullscreen .journey-side>.play-card:not(:last-child){
-    display:none!important;
-  }
-  body.play-focus .journey-side>.play-card:last-child,
-  body.play-focus .play-layout:fullscreen .journey-side>.play-card:last-child{
-    order:0!important;
-  }
-}
-
-/* ---------- Mobile portrait stability pass (combined-patch follow-up) ----------
-   Keep desktop 3-panel fullscreen separate. On phones, only the real player
-   shell + real wired controls own the visual viewport. */
-@media (max-width:920px) and (orientation:portrait){
-  body.play-focus .console,
-  .console:fullscreen{
-    --mb-controls-h:clamp(290px,calc(var(--player-height,100dvh) - 420px),350px);
-    padding:
-      max(8px,env(safe-area-inset-top))
-      max(10px,env(safe-area-inset-right))
-      max(14px,env(safe-area-inset-bottom))
-      max(10px,env(safe-area-inset-left));
-  }
-
-  /* Desktop/options controls must never enter the handheld flow. */
-  body.play-focus .primary-controls,
-  .console:fullscreen .primary-controls,
-  body.play-focus #playSettings,
-  .console:fullscreen #playSettings,
-  body.play-focus #settingsBtn,
-  .console:fullscreen #settingsBtn{
-    display:none!important;
-  }
-
-  body.play-focus .quick-controls,
-  .console:fullscreen .quick-controls{
-    display:contents!important;
-  }
-
-  /* Only Pause and Exit stay visible, pinned above the screen. */
-  body.play-focus #pauseBtn,
-  body.play-focus #fullBtn,
-  .console:fullscreen #pauseBtn,
-  .console:fullscreen #fullBtn{
-    position:absolute!important;
-    z-index:220!important;
-    top:max(10px,env(safe-area-inset-top))!important;
-    height:42px!important;
-    min-height:42px!important;
-    width:auto!important;
-    min-width:84px!important;
-    max-width:46%!important;
-    margin:0!important;
-    padding:7px 13px!important;
-    border:1px solid #8b7cff!important;
-    border-radius:16px!important;
-    background:linear-gradient(180deg,#171426f2,#0c0b16f2)!important;
-    color:#f5f5fb!important;
-    font-size:12px!important;
-    line-height:1!important;
-    box-shadow:0 6px 18px #0007,inset 0 1px 0 #ffffff18!important;
-    backdrop-filter:blur(8px)!important;
-    -webkit-backdrop-filter:blur(8px)!important;
-  }
-  body.play-focus #pauseBtn,
-  .console:fullscreen #pauseBtn{left:max(10px,env(safe-area-inset-left))!important}
-  body.play-focus #fullBtn,
-  .console:fullscreen #fullBtn{right:max(10px,env(safe-area-inset-right))!important}
-
-  body.play-focus #pauseBtn::before,
-  body.play-focus #fullBtn::before,
-  .console:fullscreen #pauseBtn::before,
-  .console:fullscreen #fullBtn::before{
-    content:none!important;
-    display:none!important;
-  }
-
-  body.play-focus .screen,
-  .console:fullscreen .screen{
-    order:0!important;
-    width:min(100%,690px)!important;
-    max-width:min(100%,690px)!important;
-    max-height:calc(var(--player-height,100dvh) - var(--mb-controls-h) - 158px)!important;
-    margin-top:56px!important;
-    flex:0 0 auto!important;
-  }
-
-  /* Keep the empty/game-not-loaded cover readable inside a 3:2 GBA screen. */
-  body.play-focus #screenCover,
-  .console:fullscreen #screenCover{
-    box-sizing:border-box;
-    padding:12px!important;
-    gap:5px!important;
-  }
-  body.play-focus #screenCover .screen-mark,
-  .console:fullscreen #screenCover .screen-mark{font-size:26px!important;margin:0!important}
-  body.play-focus #screenCover h2,
-  .console:fullscreen #screenCover h2{font-size:clamp(18px,5vw,25px)!important;line-height:1.2!important;margin:4px 0!important}
-  body.play-focus #screenCover p,
-  .console:fullscreen #screenCover p{font-size:clamp(12px,3.5vw,16px)!important;line-height:1.35!important;margin:2px 0 6px!important}
-  body.play-focus #screenCover .button,
-  .console:fullscreen #screenCover .button{min-height:38px!important;padding:8px 14px!important;font-size:12px!important}
-
-  body.play-focus .mobbyboy-brand,
-  .console:fullscreen .mobbyboy-brand{
-    order:1!important;
-    height:28px!important;
-    min-height:28px!important;
-    margin:10px 0 7px!important;
-  }
-
-  body.play-focus .mobbyboy-brand span,
-  .console:fullscreen .mobbyboy-brand span{
-    font-size:clamp(17px,5vw,21px)!important;
-  }
-
-  body.play-focus .mobbyboy-hinge,
-  .console:fullscreen .mobbyboy-hinge{
-    order:2!important;
-    width:min(100%,720px)!important;
-    height:34px!important;
-    min-height:34px!important;
-    margin:0 0 5px!important;
-  }
-
-  body.play-focus .touch-controls,
-  .console:fullscreen .touch-controls{
-    --dir:clamp(54px,15vw,62px)!important;
-    --face:clamp(72px,20vw,82px)!important;
-    order:3!important;
-    width:min(calc(100% - 8px),700px)!important;
-    max-width:700px!important;
-    height:var(--mb-controls-h)!important;
-    min-height:var(--mb-controls-h)!important;
-    flex:0 0 var(--mb-controls-h)!important;
-    grid-template-rows:54px minmax(154px,1fr) 50px!important;
-    row-gap:6px!important;
-    margin:0 auto!important;
-    padding:8px 10px 14px!important;
-    overflow:visible!important;
-  }
-
-  body.play-focus .touch-controls::before,
-  .console:fullscreen .touch-controls::before{
-    top:7px!important;
-    width:34px!important;
-    height:34px!important;
-    font-size:16px!important;
-  }
-
-  body.play-focus .touch-controls::after,
-  .console:fullscreen .touch-controls::after{
-    bottom:56px!important;
-    width:66px!important;
-    height:60px!important;
-    background-size:16px 16px!important;
-  }
-
-  body.play-focus .touch-controls .shoulders,
-  .console:fullscreen .touch-controls .shoulders{
-    padding:3px 2px 0!important;
-  }
-
-  body.play-focus .touch-controls .shoulders button,
-  .console:fullscreen .touch-controls .shoulders button{
-    width:clamp(108px,31vw,126px)!important;
-    min-width:108px!important;
-    height:50px!important;
-    min-height:50px!important;
-    font-size:19px!important;
-  }
-
-  body.play-focus .touch-controls .pad-row,
-  .console:fullscreen .touch-controls .pad-row{
-    grid-template-columns:max-content max-content!important;
-    justify-content:space-between!important;
-    column-gap:8px!important;
-    padding:0 2px!important;
-  }
-
-  body.play-focus .touch-controls .dpad::before,
-  .console:fullscreen .touch-controls .dpad::before{
-    width:calc(var(--dir) * 3.25)!important;
-    height:calc(var(--dir) * 3.25)!important;
-  }
-
-  body.play-focus .touch-controls .dpad button,
-  .console:fullscreen .touch-controls .dpad button{
-    width:var(--dir)!important;
-    min-width:var(--dir)!important;
-    height:var(--dir)!important;
-    min-height:var(--dir)!important;
-    font-size:22px!important;
-  }
-
-  body.play-focus .touch-controls .ab,
-  .console:fullscreen .touch-controls .ab{
-    gap:8px!important;
-    padding:2px 0!important;
-  }
-
-  body.play-focus .touch-controls .ab::before,
-  .console:fullscreen .touch-controls .ab::before{
-    right:-2px!important;
-    width:calc(var(--face) * 2.18)!important;
-    height:calc(var(--face) * 1.68)!important;
-  }
-
-  body.play-focus .touch-controls .ab button,
-  .console:fullscreen .touch-controls .ab button{
-    width:var(--face)!important;
-    min-width:var(--face)!important;
-    height:var(--face)!important;
-    min-height:var(--face)!important;
-    font-size:clamp(25px,7vw,30px)!important;
-  }
-
-  body.play-focus .touch-controls .ab button:first-child,
-  .console:fullscreen .touch-controls .ab button:first-child{transform:translateY(20px)!important}
-  body.play-focus .touch-controls .ab button:last-child,
-  .console:fullscreen .touch-controls .ab button:last-child{transform:translateY(-13px)!important}
-  body.play-focus .touch-controls .ab button:first-child.pressed,
-  body.play-focus .touch-controls .ab button:first-child:active,
-  .console:fullscreen .touch-controls .ab button:first-child.pressed,
-  .console:fullscreen .touch-controls .ab button:first-child:active{transform:translateY(23px) scale(.955)!important}
-  body.play-focus .touch-controls .ab button:last-child.pressed,
-  body.play-focus .touch-controls .ab button:last-child:active,
-  .console:fullscreen .touch-controls .ab button:last-child.pressed,
-  .console:fullscreen .touch-controls .ab button:last-child:active{transform:translateY(-10px) scale(.955)!important}
-
-  body.play-focus .touch-controls .system-buttons,
-  .console:fullscreen .touch-controls .system-buttons{
-    gap:30px!important;
-  }
-
-  body.play-focus .touch-controls .system-buttons button,
-  .console:fullscreen .touch-controls .system-buttons button{
-    width:44px!important;
-    min-width:44px!important;
-    height:44px!important;
-    min-height:44px!important;
-  }
-
-  body.play-focus .touch-controls .system-buttons button::after,
-  .console:fullscreen .touch-controls .system-buttons button::after{
-    top:-22px!important;
-    font-size:9px!important;
-  }
-}
-
-@media (max-width:920px) and (orientation:portrait) and (max-height:700px){
-  body.play-focus .console,
-  .console:fullscreen{--mb-controls-h:280px}
-  body.play-focus .screen,
-  .console:fullscreen .screen{margin-top:50px!important;max-height:calc(var(--player-height,100dvh) - 408px)!important}
-  body.play-focus .mobbyboy-brand,
-  .console:fullscreen .mobbyboy-brand{margin:7px 0 4px!important;height:24px!important;min-height:24px!important}
-  body.play-focus .mobbyboy-hinge,
-  .console:fullscreen .mobbyboy-hinge{height:28px!important;min-height:28px!important;margin-bottom:3px!important}
-  body.play-focus .touch-controls,
-  .console:fullscreen .touch-controls{--dir:50px!important;--face:68px!important;grid-template-rows:48px minmax(146px,1fr) 46px!important;padding:6px 9px 10px!important}
-  body.play-focus .touch-controls .shoulders button,
-  .console:fullscreen .touch-controls .shoulders button{height:46px!important;min-height:46px!important;width:104px!important;min-width:104px!important}
 }
