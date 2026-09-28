@@ -1681,3 +1681,258 @@ body.play-focus #fullBtn,
     order:0!important;
   }
 }
+
+/* ---------- Mobile portrait stability pass (combined-patch follow-up) ----------
+   Keep desktop 3-panel fullscreen separate. On phones, only the real player
+   shell + real wired controls own the visual viewport. */
+@media (max-width:920px) and (orientation:portrait){
+  body.play-focus .console,
+  .console:fullscreen{
+    --mb-controls-h:clamp(290px,calc(var(--player-height,100dvh) - 420px),350px);
+    padding:
+      max(8px,env(safe-area-inset-top))
+      max(10px,env(safe-area-inset-right))
+      max(14px,env(safe-area-inset-bottom))
+      max(10px,env(safe-area-inset-left));
+  }
+
+  /* Desktop/options controls must never enter the handheld flow. */
+  body.play-focus .primary-controls,
+  .console:fullscreen .primary-controls,
+  body.play-focus #playSettings,
+  .console:fullscreen #playSettings,
+  body.play-focus #settingsBtn,
+  .console:fullscreen #settingsBtn{
+    display:none!important;
+  }
+
+  body.play-focus .quick-controls,
+  .console:fullscreen .quick-controls{
+    display:contents!important;
+  }
+
+  /* Only Pause and Exit stay visible, pinned above the screen. */
+  body.play-focus #pauseBtn,
+  body.play-focus #fullBtn,
+  .console:fullscreen #pauseBtn,
+  .console:fullscreen #fullBtn{
+    position:absolute!important;
+    z-index:220!important;
+    top:max(10px,env(safe-area-inset-top))!important;
+    height:42px!important;
+    min-height:42px!important;
+    width:auto!important;
+    min-width:84px!important;
+    max-width:46%!important;
+    margin:0!important;
+    padding:7px 13px!important;
+    border:1px solid #8b7cff!important;
+    border-radius:16px!important;
+    background:linear-gradient(180deg,#171426f2,#0c0b16f2)!important;
+    color:#f5f5fb!important;
+    font-size:12px!important;
+    line-height:1!important;
+    box-shadow:0 6px 18px #0007,inset 0 1px 0 #ffffff18!important;
+    backdrop-filter:blur(8px)!important;
+    -webkit-backdrop-filter:blur(8px)!important;
+  }
+  body.play-focus #pauseBtn,
+  .console:fullscreen #pauseBtn{left:max(10px,env(safe-area-inset-left))!important}
+  body.play-focus #fullBtn,
+  .console:fullscreen #fullBtn{right:max(10px,env(safe-area-inset-right))!important}
+
+  body.play-focus #pauseBtn::before,
+  body.play-focus #fullBtn::before,
+  .console:fullscreen #pauseBtn::before,
+  .console:fullscreen #fullBtn::before{
+    content:none!important;
+    display:none!important;
+  }
+
+  body.play-focus .screen,
+  .console:fullscreen .screen{
+    order:0!important;
+    width:min(100%,690px)!important;
+    max-width:min(100%,690px)!important;
+    max-height:calc(var(--player-height,100dvh) - var(--mb-controls-h) - 158px)!important;
+    margin-top:56px!important;
+    flex:0 0 auto!important;
+  }
+
+  /* Keep the empty/game-not-loaded cover readable inside a 3:2 GBA screen. */
+  body.play-focus #screenCover,
+  .console:fullscreen #screenCover{
+    box-sizing:border-box;
+    padding:12px!important;
+    gap:5px!important;
+  }
+  body.play-focus #screenCover .screen-mark,
+  .console:fullscreen #screenCover .screen-mark{font-size:26px!important;margin:0!important}
+  body.play-focus #screenCover h2,
+  .console:fullscreen #screenCover h2{font-size:clamp(18px,5vw,25px)!important;line-height:1.2!important;margin:4px 0!important}
+  body.play-focus #screenCover p,
+  .console:fullscreen #screenCover p{font-size:clamp(12px,3.5vw,16px)!important;line-height:1.35!important;margin:2px 0 6px!important}
+  body.play-focus #screenCover .button,
+  .console:fullscreen #screenCover .button{min-height:38px!important;padding:8px 14px!important;font-size:12px!important}
+
+  body.play-focus .mobbyboy-brand,
+  .console:fullscreen .mobbyboy-brand{
+    order:1!important;
+    height:28px!important;
+    min-height:28px!important;
+    margin:10px 0 7px!important;
+  }
+
+  body.play-focus .mobbyboy-brand span,
+  .console:fullscreen .mobbyboy-brand span{
+    font-size:clamp(17px,5vw,21px)!important;
+  }
+
+  body.play-focus .mobbyboy-hinge,
+  .console:fullscreen .mobbyboy-hinge{
+    order:2!important;
+    width:min(100%,720px)!important;
+    height:34px!important;
+    min-height:34px!important;
+    margin:0 0 5px!important;
+  }
+
+  body.play-focus .touch-controls,
+  .console:fullscreen .touch-controls{
+    --dir:clamp(54px,15vw,62px)!important;
+    --face:clamp(72px,20vw,82px)!important;
+    order:3!important;
+    width:min(calc(100% - 8px),700px)!important;
+    max-width:700px!important;
+    height:var(--mb-controls-h)!important;
+    min-height:var(--mb-controls-h)!important;
+    flex:0 0 var(--mb-controls-h)!important;
+    grid-template-rows:54px minmax(154px,1fr) 50px!important;
+    row-gap:6px!important;
+    margin:0 auto!important;
+    padding:8px 10px 14px!important;
+    overflow:visible!important;
+  }
+
+  body.play-focus .touch-controls::before,
+  .console:fullscreen .touch-controls::before{
+    top:7px!important;
+    width:34px!important;
+    height:34px!important;
+    font-size:16px!important;
+  }
+
+  body.play-focus .touch-controls::after,
+  .console:fullscreen .touch-controls::after{
+    bottom:56px!important;
+    width:66px!important;
+    height:60px!important;
+    background-size:16px 16px!important;
+  }
+
+  body.play-focus .touch-controls .shoulders,
+  .console:fullscreen .touch-controls .shoulders{
+    padding:3px 2px 0!important;
+  }
+
+  body.play-focus .touch-controls .shoulders button,
+  .console:fullscreen .touch-controls .shoulders button{
+    width:clamp(108px,31vw,126px)!important;
+    min-width:108px!important;
+    height:50px!important;
+    min-height:50px!important;
+    font-size:19px!important;
+  }
+
+  body.play-focus .touch-controls .pad-row,
+  .console:fullscreen .touch-controls .pad-row{
+    grid-template-columns:max-content max-content!important;
+    justify-content:space-between!important;
+    column-gap:8px!important;
+    padding:0 2px!important;
+  }
+
+  body.play-focus .touch-controls .dpad::before,
+  .console:fullscreen .touch-controls .dpad::before{
+    width:calc(var(--dir) * 3.25)!important;
+    height:calc(var(--dir) * 3.25)!important;
+  }
+
+  body.play-focus .touch-controls .dpad button,
+  .console:fullscreen .touch-controls .dpad button{
+    width:var(--dir)!important;
+    min-width:var(--dir)!important;
+    height:var(--dir)!important;
+    min-height:var(--dir)!important;
+    font-size:22px!important;
+  }
+
+  body.play-focus .touch-controls .ab,
+  .console:fullscreen .touch-controls .ab{
+    gap:8px!important;
+    padding:2px 0!important;
+  }
+
+  body.play-focus .touch-controls .ab::before,
+  .console:fullscreen .touch-controls .ab::before{
+    right:-2px!important;
+    width:calc(var(--face) * 2.18)!important;
+    height:calc(var(--face) * 1.68)!important;
+  }
+
+  body.play-focus .touch-controls .ab button,
+  .console:fullscreen .touch-controls .ab button{
+    width:var(--face)!important;
+    min-width:var(--face)!important;
+    height:var(--face)!important;
+    min-height:var(--face)!important;
+    font-size:clamp(25px,7vw,30px)!important;
+  }
+
+  body.play-focus .touch-controls .ab button:first-child,
+  .console:fullscreen .touch-controls .ab button:first-child{transform:translateY(20px)!important}
+  body.play-focus .touch-controls .ab button:last-child,
+  .console:fullscreen .touch-controls .ab button:last-child{transform:translateY(-13px)!important}
+  body.play-focus .touch-controls .ab button:first-child.pressed,
+  body.play-focus .touch-controls .ab button:first-child:active,
+  .console:fullscreen .touch-controls .ab button:first-child.pressed,
+  .console:fullscreen .touch-controls .ab button:first-child:active{transform:translateY(23px) scale(.955)!important}
+  body.play-focus .touch-controls .ab button:last-child.pressed,
+  body.play-focus .touch-controls .ab button:last-child:active,
+  .console:fullscreen .touch-controls .ab button:last-child.pressed,
+  .console:fullscreen .touch-controls .ab button:last-child:active{transform:translateY(-10px) scale(.955)!important}
+
+  body.play-focus .touch-controls .system-buttons,
+  .console:fullscreen .touch-controls .system-buttons{
+    gap:30px!important;
+  }
+
+  body.play-focus .touch-controls .system-buttons button,
+  .console:fullscreen .touch-controls .system-buttons button{
+    width:44px!important;
+    min-width:44px!important;
+    height:44px!important;
+    min-height:44px!important;
+  }
+
+  body.play-focus .touch-controls .system-buttons button::after,
+  .console:fullscreen .touch-controls .system-buttons button::after{
+    top:-22px!important;
+    font-size:9px!important;
+  }
+}
+
+@media (max-width:920px) and (orientation:portrait) and (max-height:700px){
+  body.play-focus .console,
+  .console:fullscreen{--mb-controls-h:280px}
+  body.play-focus .screen,
+  .console:fullscreen .screen{margin-top:50px!important;max-height:calc(var(--player-height,100dvh) - 408px)!important}
+  body.play-focus .mobbyboy-brand,
+  .console:fullscreen .mobbyboy-brand{margin:7px 0 4px!important;height:24px!important;min-height:24px!important}
+  body.play-focus .mobbyboy-hinge,
+  .console:fullscreen .mobbyboy-hinge{height:28px!important;min-height:28px!important;margin-bottom:3px!important}
+  body.play-focus .touch-controls,
+  .console:fullscreen .touch-controls{--dir:50px!important;--face:68px!important;grid-template-rows:48px minmax(146px,1fr) 46px!important;padding:6px 9px 10px!important}
+  body.play-focus .touch-controls .shoulders button,
+  .console:fullscreen .touch-controls .shoulders button{height:46px!important;min-height:46px!important;width:104px!important;min-width:104px!important}
+}
