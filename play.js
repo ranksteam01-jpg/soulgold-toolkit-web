@@ -110,16 +110,20 @@ const PLAY_STATES=Object.freeze({
  IDLE:'IDLE',ENTER_PREP:'ENTER_PREP',DEVICE_CLOSED:'DEVICE_CLOSED',DEVICE_OPENING:'DEVICE_OPENING',DEVICE_POWERING:'DEVICE_POWERING',DEVICE_MERGING:'DEVICE_MERGING',PLAY_ACTIVE:'PLAY_ACTIVE',EXITING:'EXITING'
 });
 let focusScrollY=0,viewportFrame=0,nativeFullscreenOwned=false,nativeFullscreenTarget=null,playState=PLAY_STATES.IDLE,transitionEpoch=0;
+let heroRaf=0,heroResolve=null,heroRunning=false,pendingViewportRefresh=false,lastHeroPerf=null;
 const mobilePlayQuery=matchMedia('(max-width: 950px) and (hover: none) and (pointer: coarse)');
 const reduceMotionQuery=matchMedia('(prefers-reduced-motion: reduce)');
 const orientationQuery=matchMedia('(orientation: landscape)');
-const inputDebugEnabled=new URLSearchParams(location.search).get('inputDebug')==='1';
-let inputDebugEl=null;
+const queryParams=new URLSearchParams(location.search);
+const inputDebugEnabled=queryParams.get('inputDebug')==='1';
+const perfDebugEnabled=queryParams.get('perfDebug')==='1';
+let inputDebugEl=null,perfDebugEl=null;
 function isMobileHandheld(){return mobilePlayQuery.matches;}
 function isPlayTransitioning(){return ![PLAY_STATES.IDLE,PLAY_STATES.PLAY_ACTIVE].includes(playState);}
 function gameplayInputBlocked(){return isPlayTransitioning();}
 function setPlayState(next){
- playState=next;document.body.dataset.playState=next;updateInputDebug();
+ if(playState===next)return;
+ playState=next;document.body.dataset.playState=next;updateInputDebug();updatePerfDebug();
 }
 function updatePlayerViewport(){
  const viewport=window.visualViewport;
@@ -129,9 +133,14 @@ function updatePlayerViewport(){
  document.documentElement.style.setProperty('--player-width',width+'px');
  document.documentElement.style.setProperty('--player-top',top+'px');
  document.documentElement.style.setProperty('--player-left',left+'px');
- updateInputDebug();
+ document.documentElement.style.setProperty('--player-center-x',(left+width/2)+'px');
+ document.documentElement.style.setProperty('--player-center-y',(top+height/2)+'px');
+ updateInputDebug();updatePerfDebug();
 }
-function queuePlayerViewport(){cancelAnimationFrame(viewportFrame);viewportFrame=requestAnimationFrame(updatePlayerViewport);}
+function queuePlayerViewport(){
+ if(heroRunning){pendingViewportRefresh=true;return;}
+ cancelAnimationFrame(viewportFrame);viewportFrame=requestAnimationFrame(updatePlayerViewport);
+}
 function fullscreenTarget(){return !isMobileHandheld()&&matchMedia('(min-width: 921px)').matches?document.querySelector('.play-layout'):document.querySelector('.console');}
 function nextFrame(){return new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));}
 function runAnimation(element,keyframes,options){
@@ -148,10 +157,37 @@ function setFocusLayout(active,{restoreScroll=true}={}){
  if(active){updatePlayerViewport();document.querySelector('.play-layout').scrollTop=0;releaseInput();}
  else if(wasActive){releaseInput();if(restoreScroll)requestAnimationFrame(()=>window.scrollTo({top:focusScrollY,left:0,behavior:'instant'}));}
 }
+function heroElements(){
+ return {
+  consoleEl:document.querySelector('.console'),lid:document.querySelector('.mobbyboy-lid'),screen:document.querySelector('.screen'),
+  powerLayer:document.querySelector('.screen-power-layer'),stage:$('mobbyTransitionStage'),controls:document.querySelector('.touch-controls'),led:$('fps')
+ };
+}
+function prepareAnimationLayers(){
+ document.body.classList.add('hero-compositing');document.documentElement.classList.add('hero-compositing');
+}
+function cleanupAnimationLayers(){
+ document.body.classList.remove('hero-compositing');document.documentElement.classList.remove('hero-compositing');
+}
+function clearHeroInlineStyles(){
+ const {consoleEl,lid,screen,powerLayer,stage,controls,led}=heroElements();
+ for(const el of [consoleEl,lid,screen,powerLayer,stage,controls,led]){
+  if(!el)continue;
+  for(const prop of ['transform','opacity','filter','transform-origin','will-change'])el.style.removeProperty(prop);
+ }
+}
+function cancelHeroTimeline(result=false){
+ if(heroRaf){cancelAnimationFrame(heroRaf);heroRaf=0;}
+ heroRunning=false;
+ const resolve=heroResolve;heroResolve=null;
+ if(resolve)resolve(result);
+}
 function clearTransitionPresentation(){
+ cancelHeroTimeline(false);
  document.body.classList.remove('play-transitioning','play-merging');document.documentElement.classList.remove('player-transitioning');
- const consoleEl=document.querySelector('.console'),lid=document.querySelector('.mobbyboy-lid'),screen=document.querySelector('.screen');
- for(const el of [consoleEl,lid,screen]){if(!el)continue;el.getAnimations().forEach(animation=>animation.cancel());el.style.removeProperty('transform');el.style.removeProperty('opacity');el.style.removeProperty('filter');el.style.removeProperty('transform-origin');}
+ cleanupAnimationLayers();clearHeroInlineStyles();
+ const {consoleEl,lid,screen}=heroElements();
+ for(const el of [consoleEl,lid,screen])el?.getAnimations().forEach(animation=>animation.cancel());
 }
 function focusMode(active){
  transitionEpoch++;clearTransitionPresentation();setFocusLayout(active);setPlayState(active?PLAY_STATES.PLAY_ACTIVE:PLAY_STATES.IDLE);
@@ -162,64 +198,127 @@ async function tryNativeFullscreen({quiet=false}={}){
  try{await target.requestFullscreen({navigationUI:'hide'});nativeFullscreenOwned=document.fullscreenElement===target;if(!nativeFullscreenOwned)nativeFullscreenTarget=null;return nativeFullscreenOwned;}
  catch{nativeFullscreenOwned=false;nativeFullscreenTarget=null;if(!quiet)SG.toast('ใช้โหมดเต็มจอของหน้าเว็บ');return false;}
 }
+const clamp01=value=>Math.max(0,Math.min(1,value));
+const range=(value,start,end)=>clamp01((value-start)/(end-start));
+const lerp=(from,to,t)=>from+(to-from)*t;
+const easeOutCubic=t=>1-Math.pow(1-t,3);
+const easeInOutCubic=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const easeOutQuint=t=>1-Math.pow(1-t,5);
+function heroStateForProgress(progress){
+ if(progress<.12)return PLAY_STATES.DEVICE_CLOSED;
+ if(progress<.38)return PLAY_STATES.DEVICE_OPENING;
+ if(progress<.46)return PLAY_STATES.DEVICE_POWERING;
+ return PLAY_STATES.DEVICE_MERGING;
+}
+function createHeroPerf(){return {startedAt:performance.now(),frames:0,totalInterval:0,worstInterval:0,over20:0,over34:0,previous:null,progress:0};}
+function recordHeroFrame(perf,now,progress){
+ if(perf.previous!==null){const delta=now-perf.previous;perf.frames++;perf.totalInterval+=delta;perf.worstInterval=Math.max(perf.worstInterval,delta);if(delta>20)perf.over20++;if(delta>34)perf.over34++;}
+ perf.previous=now;perf.progress=progress;
+ if(perfDebugEnabled&&perf.frames%6===0)updatePerfDebug(perf);
+}
+function summarizeHeroPerf(perf,duration){
+ const avg=perf.frames?perf.totalInterval/perf.frames:0;
+ return {duration:Math.round(duration),sampledFrames:perf.frames,averageFrameIntervalMs:+avg.toFixed(2),cadenceEstimateHz:avg?+(1000/avg).toFixed(1):0,worstFrameIntervalMs:+perf.worstInterval.toFixed(2),framesOver20ms:perf.over20,framesOver34ms:perf.over34};
+}
+function applyHeroFrame(progress,reduced=false){
+ const {consoleEl,lid,powerLayer,stage,controls,led}=heroElements();
+ if(!consoleEl||!lid)return;
+ if(reduced){
+  const t=easeOutCubic(progress),scale=lerp(.94,1,t);
+  consoleEl.style.opacity=String(t);consoleEl.style.transform=`translate(-50%,-50%) translate3d(0,${lerp(7,0,t).toFixed(2)}px,0) scale(${scale.toFixed(5)})`;
+  lid.style.transform='translateZ(0) rotateX(0deg)';
+  if(stage)stage.style.opacity=String(.5*(1-t));
+  if(powerLayer)powerLayer.style.opacity=String(1-t);
+  if(controls){controls.style.opacity=String(t);controls.style.transform='translate3d(0,0,0)';}
+  if(led)led.style.opacity=String(.35+.65*t);
+  return;
+ }
+ const summon=easeOutQuint(range(progress,0,.18));
+ const approach=easeInOutCubic(range(progress,.44,.94));
+ const settle=easeOutCubic(range(progress,.94,1));
+ let scale=lerp(.43,.53,summon);
+ if(progress>=.44)scale=lerp(.53,1.018,approach);
+ if(progress>=.94)scale=lerp(1.018,1,settle);
+ const y=lerp(18,0,summon);
+ const deviceOpacity=easeOutCubic(range(progress,0,.14));
+ const open=easeOutQuint(range(progress,.12,.70));
+ const hingeSettle=easeOutCubic(range(progress,.70,.80));
+ const lidAngle=progress<.70?lerp(-84,3,open):lerp(3,0,hingeSettle);
+ const power=easeOutCubic(range(progress,.38,.70));
+ const controlsIn=easeOutCubic(range(progress,.54,.82));
+ const dimIn=easeOutCubic(range(progress,0,.18)),dimOut=easeInOutCubic(range(progress,.82,1));
+ const stageOpacity=.72*dimIn*(1-dimOut);
+ consoleEl.style.opacity=String(deviceOpacity);
+ consoleEl.style.transform=`translate(-50%,-50%) translate3d(0,${y.toFixed(2)}px,0) scale(${scale.toFixed(5)})`;
+ lid.style.transform=`translateZ(0) rotateX(${lidAngle.toFixed(3)}deg)`;
+ if(powerLayer)powerLayer.style.opacity=String(1-power);
+ if(stage)stage.style.opacity=String(stageOpacity);
+ if(controls){controls.style.opacity=String(controlsIn);controls.style.transform=`translate3d(0,${lerp(10,0,controlsIn).toFixed(2)}px,0)`;}
+ if(led)led.style.opacity=String(.28+.72*power);
+}
+function runHeroTimeline(epoch){
+ const duration=reduceMotionQuery.matches?240:1180;
+ const perf=createHeroPerf();
+ heroRunning=true;prepareAnimationLayers();
+ return new Promise(resolve=>{
+  heroResolve=resolve;
+  const start=performance.now();
+  const frame=now=>{
+   if(epoch!==transitionEpoch){cancelHeroTimeline(false);return;}
+   const progress=clamp01((now-start)/duration);
+   recordHeroFrame(perf,now,progress);
+   const desiredState=reduceMotionQuery.matches?(progress<.35?PLAY_STATES.DEVICE_CLOSED:PLAY_STATES.DEVICE_MERGING):heroStateForProgress(progress);
+   setPlayState(desiredState);
+   applyHeroFrame(progress,reduceMotionQuery.matches);
+   if(progress<1){heroRaf=requestAnimationFrame(frame);return;}
+   heroRaf=0;heroRunning=false;lastHeroPerf=summarizeHeroPerf(perf,now-start);window.__mobbyMotionStats=lastHeroPerf;updatePerfDebug(perf);
+   const done=heroResolve;heroResolve=null;if(done)done(true);
+  };
+  heroRaf=requestAnimationFrame(frame);
+ });
+}
+function finishInterruptedMobileTransition(reason='interrupted'){
+ if(!heroRunning&&!document.body.classList.contains('play-transitioning'))return;
+ transitionEpoch++;cancelHeroTimeline(false);releaseInput();
+ const {consoleEl,lid,powerLayer,stage,controls}=heroElements();
+ if(consoleEl)consoleEl.style.transform='none';if(lid)lid.style.transform='none';if(powerLayer)powerLayer.style.opacity='0';if(stage)stage.style.opacity='0';if(controls){controls.style.opacity='1';controls.style.transform='none';}
+ document.body.classList.remove('play-transitioning','play-merging');document.documentElement.classList.remove('player-transitioning');
+ setFocusLayout(true,{restoreScroll:false});clearHeroInlineStyles();cleanupAnimationLayers();setPlayState(PLAY_STATES.PLAY_ACTIVE);updatePlayerViewport();pendingViewportRefresh=false;
+ if(perfDebugEnabled){lastHeroPerf={...(lastHeroPerf||{}),interruptedBy:reason};updatePerfDebug();}
+}
 async function enterMobileImmersive(){
  if(playState!==PLAY_STATES.IDLE)return;
- const epoch=++transitionEpoch,consoleEl=document.querySelector('.console'),lid=document.querySelector('.mobbyboy-lid'),screen=document.querySelector('.screen');
+ const epoch=++transitionEpoch;
  focusScrollY=window.scrollY;updatePlayerViewport();releaseInput();
  document.body.classList.add('play-transitioning');document.documentElement.classList.add('player-transitioning');
  setPlayState(PLAY_STATES.ENTER_PREP);await nextFrame();if(epoch!==transitionEpoch)return;
- setPlayState(PLAY_STATES.DEVICE_CLOSED);
- if(reduceMotionQuery.matches){
-  clearTransitionPresentation();setFocusLayout(true,{restoreScroll:false});setPlayState(PLAY_STATES.PLAY_ACTIVE);try{if(typeof navigator.vibrate==='function')navigator.vibrate(8);}catch{}await tryNativeFullscreen({quiet:true});return;
- }
- const summon=await runAnimation(consoleEl,[
-  {opacity:0,transform:'translate(-50%,-50%) scale(.38) translateY(18px)'},
-  {opacity:1,transform:'translate(-50%,-50%) scale(.52) translateY(0)'}
- ],{duration:240,easing:'cubic-bezier(.2,.8,.22,1)'});if(epoch!==transitionEpoch)return;
- consoleEl.style.opacity='1';consoleEl.style.transform='translate(-50%,-50%) scale(.52)';summon?.cancel();
- setPlayState(PLAY_STATES.DEVICE_OPENING);
- const open=await runAnimation(lid,[
-  {transform:'perspective(1200px) rotateX(-82deg)'},
-  {transform:'perspective(1200px) rotateX(8deg)',offset:.82},
-  {transform:'perspective(1200px) rotateX(0deg)'}
- ],{duration:620,easing:'cubic-bezier(.16,.82,.23,1)'});if(epoch!==transitionEpoch)return;
- lid.style.transform='perspective(1200px) rotateX(0deg)';open?.cancel();
- setPlayState(PLAY_STATES.DEVICE_POWERING);
- try{if(typeof navigator.vibrate==='function')navigator.vibrate(10);}catch{}
- const power=await runAnimation(screen,[
-  {opacity:.72,filter:'brightness(.12) saturate(.55)'},
-  {opacity:1,filter:'brightness(1.18) saturate(1.06)',offset:.72},
-  {opacity:1,filter:'brightness(1) saturate(1)'}
- ],{duration:270,easing:'ease-out'});if(epoch!==transitionEpoch)return;
- screen.style.opacity='1';screen.style.filter='brightness(1)';power?.cancel();
- setPlayState(PLAY_STATES.DEVICE_MERGING);
- const from=consoleEl.getBoundingClientRect();
- consoleEl.style.removeProperty('transform');consoleEl.style.removeProperty('opacity');lid.style.removeProperty('transform');screen.style.removeProperty('filter');screen.style.removeProperty('opacity');
- document.body.classList.remove('play-transitioning');document.documentElement.classList.remove('player-transitioning');
- document.body.classList.add('play-merging');setFocusLayout(true,{restoreScroll:false});
- const to=consoleEl.getBoundingClientRect();
- const sx=Math.max(.01,from.width/to.width),sy=Math.max(.01,from.height/to.height),dx=from.left-to.left,dy=from.top-to.top;
- const merge=await runAnimation(consoleEl,[
-  {transformOrigin:'top left',transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`,opacity:.98},
-  {transformOrigin:'top left',transform:'translate(0,0) scale(1,1)',opacity:1}
- ],{duration:460,easing:'cubic-bezier(.17,.84,.28,1)'});merge?.cancel();document.body.classList.remove('play-merging');
- if(epoch!==transitionEpoch)return;
- setPlayState(PLAY_STATES.PLAY_ACTIVE);updatePlayerViewport();await tryNativeFullscreen({quiet:true});
+ const completed=await runHeroTimeline(epoch);if(!completed||epoch!==transitionEpoch)return;
+ // Switch from the transition shell to the active shell in one render turn.
+ const {consoleEl,lid,powerLayer,stage,controls}=heroElements();
+ if(consoleEl)consoleEl.style.transform='none';if(lid)lid.style.transform='none';if(powerLayer)powerLayer.style.opacity='0';if(stage)stage.style.opacity='0';if(controls){controls.style.opacity='1';controls.style.transform='none';}
+ document.body.classList.add('play-merging');
+ setFocusLayout(true,{restoreScroll:false});
+ document.body.classList.remove('play-transitioning');document.documentElement.classList.remove('player-transitioning');document.body.classList.remove('play-merging');
+ clearHeroInlineStyles();cleanupAnimationLayers();setPlayState(PLAY_STATES.PLAY_ACTIVE);
+ if(pendingViewportRefresh){pendingViewportRefresh=false;updatePlayerViewport();}
+ try{if(typeof navigator.vibrate==='function')navigator.vibrate(8);}catch{}
+ // Native fullscreen is deliberately requested only after the compositor merge so it cannot cut the hero motion in half.
+ await tryNativeFullscreen({quiet:true});
 }
 async function enterDesktopImmersive(){
  if(playState!==PLAY_STATES.IDLE)return;
  focusScrollY=window.scrollY;releaseInput();setPlayState(PLAY_STATES.ENTER_PREP);setFocusLayout(true,{restoreScroll:false});setPlayState(PLAY_STATES.PLAY_ACTIVE);await tryNativeFullscreen({quiet:false});
 }
 async function leaveFullscreen(){
- if(playState===PLAY_STATES.IDLE&&!document.body.classList.contains('play-focus'))return;
- const epoch=++transitionEpoch;setPlayState(PLAY_STATES.EXITING);releaseInput();
+ if(playState===PLAY_STATES.IDLE&&!document.body.classList.contains('play-focus')&&!document.body.classList.contains('play-transitioning'))return;
+ const epoch=++transitionEpoch;cancelHeroTimeline(false);setPlayState(PLAY_STATES.EXITING);releaseInput();
  const consoleEl=document.querySelector('.console');
  if(isMobileHandheld()&&document.body.classList.contains('play-focus')&&!reduceMotionQuery.matches){
-  const exitAnim=await runAnimation(consoleEl,[{transform:'scale(1)',opacity:1},{transform:'scale(.96)',opacity:.6}],{duration:170,easing:'ease-in'});exitAnim?.cancel();
+  const exitAnim=await runAnimation(consoleEl,[{transform:'translate3d(0,0,0) scale(1)',opacity:1},{transform:'translate3d(0,4px,0) scale(.975)',opacity:.54}],{duration:150,easing:'cubic-bezier(.4,0,1,1)'});exitAnim?.cancel();
  }
  if(epoch!==transitionEpoch)return;
  if(nativeFullscreenOwned&&document.fullscreenElement){try{await document.exitFullscreen();}catch{}nativeFullscreenOwned=false;nativeFullscreenTarget=null;}
- clearTransitionPresentation();setFocusLayout(false);setPlayState(PLAY_STATES.IDLE);
+ clearTransitionPresentation();setFocusLayout(false);setPlayState(PLAY_STATES.IDLE);pendingViewportRefresh=false;
 }
 $('fullBtn').onclick=()=>guard(async()=>{
  if(playState===PLAY_STATES.PLAY_ACTIVE||document.body.classList.contains('play-focus')){await leaveFullscreen();return;}
@@ -233,7 +332,15 @@ document.addEventListener('fullscreenchange',()=>{
 window.addEventListener('resize',()=>{if(document.body.classList.contains('play-focus')||document.body.classList.contains('play-transitioning'))queuePlayerViewport();},{passive:true});
 window.visualViewport?.addEventListener('resize',()=>{if(document.body.classList.contains('play-focus')||document.body.classList.contains('play-transitioning'))queuePlayerViewport();},{passive:true});
 window.visualViewport?.addEventListener('scroll',()=>{if(document.body.classList.contains('play-focus')||document.body.classList.contains('play-transitioning'))queuePlayerViewport();},{passive:true});
-orientationQuery.addEventListener('change',()=>{releaseInput();if(document.body.classList.contains('play-focus')||document.body.classList.contains('play-transitioning')){queuePlayerViewport();return;}if(engine&&!document.querySelector('dialog[open]'))requestAnimationFrame(()=>document.querySelector('.console').scrollIntoView({block:'start'}));});
+orientationQuery.addEventListener('change',()=>{
+ releaseInput();
+ if(heroRunning||document.body.classList.contains('play-transitioning')){finishInterruptedMobileTransition('orientationchange');return;}
+ if(document.body.classList.contains('play-focus')){queuePlayerViewport();return;}
+ if(engine&&!document.querySelector('dialog[open]'))requestAnimationFrame(()=>document.querySelector('.console').scrollIntoView({block:'start'}));
+});
+document.addEventListener('visibilitychange',()=>{
+ if(document.visibilityState==='hidden'&&(heroRunning||document.body.classList.contains('play-transitioning')))finishInterruptedMobileTransition('visibility-hidden');
+});
 function ensureInputDebug(){
  if(!inputDebugEnabled||inputDebugEl)return;inputDebugEl=document.createElement('pre');inputDebugEl.id='inputDebug';inputDebugEl.setAttribute('aria-hidden','true');document.body.append(inputDebugEl);
 }
@@ -241,7 +348,16 @@ function updateInputDebug(){
  if(!inputDebugEnabled)return;ensureInputDebug();if(!inputDebugEl)return;
  const vv=window.visualViewport;inputDebugEl.textContent=`state ${playState}\n${innerWidth}×${innerHeight} vv ${Math.round(vv?.width||innerWidth)}×${Math.round(vv?.height||innerHeight)}\n${orientationQuery.matches?'landscape':'portrait'} pointers ${[...pointers.keys()].join(',')||'-'}\nmask ${inputMask()}`;
 }
-updateInputDebug();
+function ensurePerfDebug(){
+ if(!perfDebugEnabled||perfDebugEl)return;perfDebugEl=document.createElement('pre');perfDebugEl.id='perfDebug';perfDebugEl.setAttribute('aria-hidden','true');document.body.append(perfDebugEl);
+}
+function updatePerfDebug(livePerf=null){
+ if(!perfDebugEnabled)return;ensurePerfDebug();if(!perfDebugEl)return;
+ const vv=window.visualViewport,stats=livePerf||lastHeroPerf;
+ const live=livePerf?`progress ${(livePerf.progress*100).toFixed(0)}%\nframes ${livePerf.frames} worst ${livePerf.worstInterval.toFixed(1)}ms >20 ${livePerf.over20} >34 ${livePerf.over34}`:stats?`avg ${stats.averageFrameIntervalMs??'-'}ms ~${stats.cadenceEstimateHz??'-'}Hz\nworst ${stats.worstFrameIntervalMs??'-'}ms >20 ${stats.framesOver20ms??'-'} >34 ${stats.framesOver34ms??'-'}`:'no transition sample yet';
+ perfDebugEl.textContent=`MOBBY MOTION DEBUG\nstate ${playState}\nvv ${Math.round(vv?.width||innerWidth)}×${Math.round(vv?.height||innerHeight)}\n${live}`;
+}
+updateInputDebug();updatePerfDebug();
 $('volume').oninput=e=>engine?.config.write('volume',+e.target.value);
 document.querySelectorAll('[data-bit]').forEach(button=>{
  button.oncontextmenu=e=>e.preventDefault();
