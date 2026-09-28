@@ -106,7 +106,7 @@ document.addEventListener('click',e=>{
  if(target.pathname===location.pathname){e.preventDefault();return;}
  e.preventDefault();guard(async()=>{await stopGame();location.href=target.href;});
 });
-let focusScrollY=0,viewportFrame=0,nativeFullscreenOwned=false;
+let focusScrollY=0,viewportFrame=0,nativeFullscreenOwned=false,nativeFullscreenTarget=null;
 function updatePlayerViewport(){
  const viewport=window.visualViewport;
  const height=Math.round(viewport?.height||window.innerHeight),width=Math.round(viewport?.width||window.innerWidth);
@@ -114,6 +114,9 @@ function updatePlayerViewport(){
  document.documentElement.style.setProperty('--player-width',width+'px');
 }
 function queuePlayerViewport(){cancelAnimationFrame(viewportFrame);viewportFrame=requestAnimationFrame(updatePlayerViewport);}
+function fullscreenTarget(){
+ return matchMedia('(min-width: 921px)').matches?document.querySelector('.play-layout'):document.querySelector('.console');
+}
 function focusMode(active){
  const wasActive=document.body.classList.contains('play-focus');
  if(active&&!wasActive)focusScrollY=window.scrollY;
@@ -125,22 +128,21 @@ function focusMode(active){
 async function leaveFullscreen(){
  if(nativeFullscreenOwned&&document.fullscreenElement){
   try{await document.exitFullscreen();}catch{SG.toast('ออกจากเต็มจอผ่านเบราว์เซอร์ไม่สำเร็จ');return;}
-  nativeFullscreenOwned=false;
+  nativeFullscreenOwned=false;nativeFullscreenTarget=null;
  }
  focusMode(false);
 }
 $('fullBtn').onclick=()=>guard(async()=>{
  if(document.body.classList.contains('play-focus')){await leaveFullscreen();return;}
  focusMode(true);
- const target=document.querySelector('.console');
- if(typeof target.requestFullscreen!=='function'){SG.toast('ใช้โหมดเต็มจอสำหรับมือถือ');return;}
- try{await target.requestFullscreen({navigationUI:'hide'});nativeFullscreenOwned=document.fullscreenElement===target;}
- catch{nativeFullscreenOwned=false;SG.toast('ใช้โหมดเต็มจอสำหรับมือถือ');}
+ const target=fullscreenTarget();nativeFullscreenTarget=target;
+ if(typeof target?.requestFullscreen!=='function'){nativeFullscreenTarget=null;SG.toast('ใช้โหมดเต็มจอของหน้าเว็บ');return;}
+ try{await target.requestFullscreen({navigationUI:'hide'});nativeFullscreenOwned=document.fullscreenElement===target;if(!nativeFullscreenOwned)nativeFullscreenTarget=null;}
+ catch{nativeFullscreenOwned=false;nativeFullscreenTarget=null;SG.toast('ใช้โหมดเต็มจอของหน้าเว็บ');}
 });
 document.addEventListener('fullscreenchange',()=>{
- const target=document.querySelector('.console');
- if(document.fullscreenElement===target){nativeFullscreenOwned=true;if(!document.body.classList.contains('play-focus'))focusMode(true);queuePlayerViewport();return;}
- if(nativeFullscreenOwned){nativeFullscreenOwned=false;if(document.body.classList.contains('play-focus'))focusMode(false);}
+ if(nativeFullscreenTarget&&document.fullscreenElement===nativeFullscreenTarget){nativeFullscreenOwned=true;if(!document.body.classList.contains('play-focus'))focusMode(true);queuePlayerViewport();return;}
+ if(nativeFullscreenOwned&&!document.fullscreenElement){nativeFullscreenOwned=false;nativeFullscreenTarget=null;if(document.body.classList.contains('play-focus'))focusMode(false);}
 });
 window.addEventListener('resize',()=>{if(document.body.classList.contains('play-focus'))queuePlayerViewport();},{passive:true});
 window.visualViewport?.addEventListener('resize',()=>{if(document.body.classList.contains('play-focus'))queuePlayerViewport();},{passive:true});
