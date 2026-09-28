@@ -106,24 +106,40 @@ document.addEventListener('click',e=>{
  if(target.pathname===location.pathname){e.preventDefault();return;}
  e.preventDefault();guard(async()=>{await stopGame();location.href=target.href;});
 });
-let focusScrollY=0,viewportFrame=0,nativeFullscreenOwned=false,nativeFullscreenTarget=null;
+let focusScrollY=0,viewportFrame=0,nativeFullscreenOwned=false,nativeFullscreenTarget=null,mbOpenTimer=0;
 function updatePlayerViewport(){
  const viewport=window.visualViewport;
  const height=Math.round(viewport?.height||window.innerHeight),width=Math.round(viewport?.width||window.innerWidth);
+ const top=Math.round(viewport?.offsetTop||0),left=Math.round(viewport?.offsetLeft||0);
  document.documentElement.style.setProperty('--player-height',height+'px');
  document.documentElement.style.setProperty('--player-width',width+'px');
+ document.documentElement.style.setProperty('--player-top',top+'px');
+ document.documentElement.style.setProperty('--player-left',left+'px');
+}
+function cueMobbyboyOpening(){
+ clearTimeout(mbOpenTimer);
+ document.body.classList.remove('mb-opening','mb-powered');
+ if(!matchMedia('(max-width: 950px) and (hover: none) and (pointer: coarse)').matches){document.body.classList.add('mb-powered');return;}
+ if(matchMedia('(prefers-reduced-motion: reduce)').matches){document.body.classList.add('mb-powered');return;}
+ requestAnimationFrame(()=>{
+  document.body.classList.add('mb-opening');
+  try{if(typeof navigator.vibrate==='function')navigator.vibrate(12);}catch{}
+  mbOpenTimer=setTimeout(()=>{document.body.classList.remove('mb-opening');document.body.classList.add('mb-powered');},720);
+ });
 }
 function queuePlayerViewport(){cancelAnimationFrame(viewportFrame);viewportFrame=requestAnimationFrame(updatePlayerViewport);}
 function fullscreenTarget(){
- return matchMedia('(min-width: 921px)').matches?document.querySelector('.play-layout'):document.querySelector('.console');
+ const mobileHandheld=matchMedia('(max-width: 950px) and (hover: none) and (pointer: coarse)').matches;
+ return !mobileHandheld&&matchMedia('(min-width: 921px)').matches?document.querySelector('.play-layout'):document.querySelector('.console');
 }
+
 function focusMode(active){
  const wasActive=document.body.classList.contains('play-focus');
  if(active&&!wasActive)focusScrollY=window.scrollY;
  document.body.classList.toggle('play-focus',active);document.documentElement.classList.toggle('player-fullscreen',active);
  $('fullBtn').textContent=active?'✕ ออกจากเต็มจอ':'เต็มจอ';$('fullBtn').setAttribute('aria-pressed',String(active));
- if(active){updatePlayerViewport();document.querySelector('.play-layout').scrollTop=0;releaseInput();}
- else if(wasActive){releaseInput();requestAnimationFrame(()=>window.scrollTo({top:focusScrollY,left:0,behavior:'instant'}));}
+ if(active){updatePlayerViewport();document.querySelector('.play-layout').scrollTop=0;releaseInput();cueMobbyboyOpening();}
+ else if(wasActive){clearTimeout(mbOpenTimer);document.body.classList.remove('mb-opening','mb-powered');releaseInput();requestAnimationFrame(()=>window.scrollTo({top:focusScrollY,left:0,behavior:'instant'}));}
 }
 async function leaveFullscreen(){
  if(nativeFullscreenOwned&&document.fullscreenElement){
